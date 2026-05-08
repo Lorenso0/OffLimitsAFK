@@ -40,7 +40,7 @@
           "flag": "--melee-key",
           "value": "v",
           "placeholder": "v"
-        },
+        }
       ],
       "timings": [
         {
@@ -344,7 +344,7 @@
           "flag": "--melee-key",
           "value": "v",
           "placeholder": "v"
-        },
+        }
       ],
       "timings": [
         {
@@ -413,7 +413,7 @@
           "flag": "--melee-key",
           "value": "v",
           "placeholder": "v"
-        },
+        }
       ],
       "timings": [
         {

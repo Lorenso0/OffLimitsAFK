@@ -1,0 +1,68 @@
+{
+  "perks": [
+    {
+      "name": "Jugger-Nog",
+      "image": "pictures/Jugger-Nog.png",
+      "augments": [
+        {
+          "slot": "Major",
+          "name": "Probiotic",
+          "image": "pictures/Jugger-Nog Major Probiotic.png"
+        },
+        {
+          "slot": "Minor",
+          "name": "Durable Plates",
+          "image": "pictures/Jugger-Nog Minor Durable Plates.png"
+        },
+        {
+          "slot": "Minor",
+          "name": "Hardened Plates",
+          "image": "pictures/Jugger-Nog Minor Hardened Plates.png"
+        }
+      ]
+    },
+    {
+      "name": "Elemental Pop",
+      "image": "pictures/Elemental Pop.png",
+      "augments": [
+        {
+          "slot": "Major",
+          "name": "Citrus Focus",
+          "image": "pictures/Elemental Pop Major Citrus Focus.png"
+        },
+        {
+          "slot": "Minor",
+          "name": "Chill Berry",
+          "image": "pictures/Elemental Pop Minor Chill Berry.png"
+        }
+      ]
+    },
+    {
+      "name": "Melee Macchiato",
+      "image": "pictures/Melee Macchiato.png",
+      "augments": [
+        {
+          "slot": "Major",
+          "name": "Vampiritic Extraction",
+          "image": "pictures/Melee Macchiato Major Vampiritic Extraction.png"
+        },
+        {
+          "slot": "Minor",
+          "name": "Mugging",
+          "image": "pictures/Melee Macchiato Minor Mugging.png"
+        }
+      ]
+    },
+    {
+      "name": "Vulture Aid",
+      "image": "pictures/Vulture Aid.png",
+      "augments": [
+        {
+          "slot": "Major",
+          "name": "Armor-Matic",
+          "image": "pictures/Vulture Aid Major Armor-Matic.png"
+        }
+      ]
+    }
+  ]
+}

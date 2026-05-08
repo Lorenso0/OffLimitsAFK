@@ -1,0 +1,460 @@
+{
+  "scripts": [
+    {
+      "id": "zombies-afk-automatic-guns",
+      "name": "Automatic Guns",
+      "kind": "ahk",
+      "entry": "scripts/Automatic Guns.ahk",
+      "description": "AHK automatic guns loop with held left click, V press, and periodic X. Toggle with 8 and exit with F2.",
+      "args": [],
+      "setup": [
+        "Open Black Ops Zombies and focus the game before toggling.",
+        "Tap 8 to start or stop the automatic guns loop.",
+        "Use F2 to fully exit the script."
+      ],
+      "keybinds": [
+        {
+          "key": "toggle_key",
+          "label": "Toggle Script",
+          "flag": "--toggle-key",
+          "value": "8",
+          "placeholder": "8"
+        },
+        {
+          "key": "exit_key",
+          "label": "Exit Script",
+          "flag": "--exit-key",
+          "value": "F2",
+          "placeholder": "F2"
+        },
+        {
+          "key": "scoreboard_key",
+          "label": "Scoreboard Toggle",
+          "flag": "--scoreboard-key",
+          "value": "sc029",
+          "placeholder": "sc029"
+        },
+        {
+          "key": "melee_key",
+          "label": "Melee",
+          "flag": "--melee-key",
+          "value": "v",
+          "placeholder": "v"
+        },
+      ],
+      "timings": [
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        },
+        {
+          "key": "hold_lmb_time",
+          "label": "Hold Left Click",
+          "flag": "--hold-lmb-time",
+          "value": "65",
+          "suffix": "ms"
+        },
+        {
+          "key": "v_wait_time",
+          "label": "Wait after Melee",
+          "flag": "--v-wait-time",
+          "value": "430",
+          "suffix": "ms"
+        }
+      ],
+      "accent": "#6d28d9"
+    },
+    {
+      "id": "zombies-afk-sniper-scoreboard",
+      "name": "Sniper",
+      "kind": "ahk",
+      "entry": "scripts/Sniper.ahk",
+      "description": "AHK sniper loop. Uses left click, G, 1, melee, then V. Toggle with 8 and exit with F2.",
+      "args": [],
+      "setup": [
+        "Open Black Ops Zombies and focus cod.exe before toggling.",
+        "Tap 8 to start or stop the sniper loop.",
+        "Use F2 to fully exit the script."
+      ],
+      "keybinds": [
+        {
+          "key": "toggle_key",
+          "label": "Toggle Script",
+          "flag": "--toggle-key",
+          "value": "8",
+          "placeholder": "8"
+        },
+        {
+          "key": "exit_key",
+          "label": "Exit Script",
+          "flag": "--exit-key",
+          "value": "F2",
+          "placeholder": "F2"
+        },
+        {
+          "key": "lethal_key",
+          "label": "Lethal Equipment",
+          "flag": "--lethal-key",
+          "value": "g",
+          "placeholder": "g"
+        },
+        {
+          "key": "weapon_switch_key",
+          "label": "Weapon Switch",
+          "flag": "--weapon-switch-key",
+          "value": "1",
+          "placeholder": "1"
+        },
+        {
+          "key": "scoreboard_key",
+          "label": "Scoreboard Toggle",
+          "flag": "--scoreboard-key",
+          "value": "sc029",
+          "placeholder": "sc029"
+        },
+        {
+          "key": "melee_key",
+          "label": "Melee",
+          "flag": "--melee-key",
+          "value": "v",
+          "placeholder": "v"
+        }
+      ],
+      "timings": [
+        {
+          "key": "reset_time",
+          "label": "Wait before Melee",
+          "flag": "--reset-time",
+          "value": "800",
+          "suffix": "ms"
+        },
+        {
+          "key": "v_wait_time",
+          "label": "Wait after Melee",
+          "flag": "--v-wait-time",
+          "value": "1550",
+          "suffix": "ms"
+        },
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        }
+      ],
+      "accent": "#a855f7"
+    },
+    {
+      "id": "zombies-afk-shotgun-scoreboard",
+      "name": "Shotgun",
+      "kind": "ahk",
+      "entry": "scripts/Shotgun.ahk",
+      "description": "AHK shotgun loop. Same toggle flow with shotgun timing values. Toggle with 8 and exit with F2.",
+      "args": [],
+      "setup": [
+        "Open Black Ops Zombies and focus cod.exe before toggling.",
+        "Tap 8 to start or stop the shotgun loop.",
+        "Use F2 to fully exit the script."
+      ],
+      "keybinds": [
+        {
+          "key": "toggle_key",
+          "label": "Toggle Script",
+          "flag": "--toggle-key",
+          "value": "8",
+          "placeholder": "8"
+        },
+        {
+          "key": "exit_key",
+          "label": "Exit Script",
+          "flag": "--exit-key",
+          "value": "F2",
+          "placeholder": "F2"
+        },
+        {
+          "key": "lethal_key",
+          "label": "Lethal Equipment",
+          "flag": "--lethal-key",
+          "value": "g",
+          "placeholder": "g"
+        },
+        {
+          "key": "weapon_switch_key",
+          "label": "Weapon Switch",
+          "flag": "--weapon-switch-key",
+          "value": "1",
+          "placeholder": "1"
+        },
+        {
+          "key": "scoreboard_key",
+          "label": "Scoreboard Toggle",
+          "flag": "--scoreboard-key",
+          "value": "sc029",
+          "placeholder": "sc029"
+        },
+        {
+          "key": "melee_key",
+          "label": "Melee",
+          "flag": "--melee-key",
+          "value": "v",
+          "placeholder": "v"
+        }
+      ],
+      "timings": [
+        {
+          "key": "reset_time",
+          "label": "Wait before Melee",
+          "flag": "--reset-time",
+          "value": "550",
+          "suffix": "ms"
+        },
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        },
+        {
+          "key": "v_wait_time",
+          "label": "Wait after Melee",
+          "flag": "--v-wait-time",
+          "value": "1600",
+          "suffix": "ms"
+        }
+      ],
+      "accent": "#9333ea"
+    },
+    {
+      "id": "zombies-afk-melee-only",
+      "name": "Melee",
+      "kind": "ahk",
+      "entry": "scripts/Melee.ahk",
+      "description": "AHK melee-only loop with randomized V timing. Toggle with 8 and exit with F2.",
+      "args": [],
+      "setup": [
+        "Open Black Ops Zombies and focus the game before toggling.",
+        "Tap 8 to start or stop the melee loop.",
+        "Use F2 to fully exit the script."
+      ],
+      "keybinds": [
+        {
+          "key": "toggle_key",
+          "label": "Toggle Script",
+          "flag": "--toggle-key",
+          "value": "8",
+          "placeholder": "8"
+        },
+        {
+          "key": "exit_key",
+          "label": "Exit Script",
+          "flag": "--exit-key",
+          "value": "F2",
+          "placeholder": "F2"
+        },
+        {
+          "key": "scoreboard_key",
+          "label": "Scoreboard Toggle",
+          "flag": "--scoreboard-key",
+          "value": "sc029",
+          "placeholder": "sc029"
+        },
+        {
+          "key": "melee_key",
+          "label": "Melee",
+          "flag": "--melee-key",
+          "value": "v",
+          "placeholder": "v"
+        }
+      ],
+      "timings": [
+        {
+          "key": "v_delay",
+          "label": "Base V Delay",
+          "flag": "--v-delay",
+          "value": "130",
+          "suffix": "ms"
+        },
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        },
+        {
+          "key": "v_delay_random",
+          "label": "Random V Delay",
+          "flag": "--v-delay-random",
+          "value": "79",
+          "suffix": "ms"
+        }
+      ],
+      "accent": "#8b5cf6"
+    },
+    {
+      "id": "zombies-afk-launchers",
+      "name": "Launcher",
+      "kind": "ahk",
+      "entry": "scripts/Launchers.ahk",
+      "description": "AHK launcher loop with periodic X press support. Toggle with 8 and exit with F2.",
+      "args": [],
+      "setup": [
+        "Open Black Ops Zombies and focus the game before toggling.",
+        "Tap 8 to start or stop the launcher loop.",
+        "Use F2 to fully exit the script."
+      ],
+      "keybinds": [
+        {
+          "key": "toggle_key",
+          "label": "Toggle Script",
+          "flag": "--toggle-key",
+          "value": "8",
+          "placeholder": "8"
+        },
+        {
+          "key": "exit_key",
+          "label": "Exit Script",
+          "flag": "--exit-key",
+          "value": "F2",
+          "placeholder": "F2"
+        },
+        {
+          "key": "scoreboard_key",
+          "label": "Scoreboard Toggle",
+          "flag": "--scoreboard-key",
+          "value": "sc029",
+          "placeholder": "sc029"
+        },
+        {
+          "key": "melee_key",
+          "label": "Melee",
+          "flag": "--melee-key",
+          "value": "v",
+          "placeholder": "v"
+        },
+      ],
+      "timings": [
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        },
+        {
+          "key": "hold_lmb_time",
+          "label": "Hold Left Click",
+          "flag": "--hold-lmb-time",
+          "value": "600",
+          "suffix": "ms"
+        },
+        {
+          "key": "v_wait_time",
+          "label": "Wait after Melee",
+          "flag": "--v-wait-time",
+          "value": "430",
+          "suffix": "ms"
+        }
+      ],
+      "accent": "#7c3aed"
+    },
+    {
+      "id": "zombies-afk-gdl-special",
+      "name": "GDL",
+      "kind": "ahk",
+      "entry": "scripts/GDL Special.ahk",
+      "description": "AHK GDL special loop with left click, right click, V, and periodic X. Toggle with 8 and exit with F2.",
+      "args": [],
+      "setup": [
+        "Open Black Ops Zombies and focus the game before toggling.",
+        "Tap 8 to start or stop the GDL loop.",
+        "Use F2 to fully exit the script."
+      ],
+      "keybinds": [
+        {
+          "key": "toggle_key",
+          "label": "Toggle Script",
+          "flag": "--toggle-key",
+          "value": "8",
+          "placeholder": "8"
+        },
+        {
+          "key": "exit_key",
+          "label": "Exit Script",
+          "flag": "--exit-key",
+          "value": "F2",
+          "placeholder": "F2"
+        },
+        {
+          "key": "scoreboard_key",
+          "label": "Scoreboard Toggle",
+          "flag": "--scoreboard-key",
+          "value": "sc029",
+          "placeholder": "sc029"
+        },
+        {
+          "key": "melee_key",
+          "label": "Melee",
+          "flag": "--melee-key",
+          "value": "v",
+          "placeholder": "v"
+        },
+      ],
+      "timings": [
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        },
+        {
+          "key": "hold_lmb_time",
+          "label": "Hold Left Click",
+          "flag": "--hold-lmb-time",
+          "value": "65",
+          "suffix": "ms"
+        },
+        {
+          "key": "post_lmb_wait",
+          "label": "Wait after Left Click",
+          "flag": "--post-lmb-wait",
+          "value": "100",
+          "suffix": "ms"
+        },
+        {
+          "key": "post_rmb_wait",
+          "label": "Wait after Right Click",
+          "flag": "--post-rmb-wait",
+          "value": "100",
+          "suffix": "ms"
+        },
+        {
+          "key": "v_wait_time",
+          "label": "Wait after Melee",
+          "flag": "--v-wait-time",
+          "value": "530",
+          "suffix": "ms"
+        }
+      ],
+      "accent": "#c084fc"
+    }
+  ]
+}

@@ -384,3 +384,44 @@ def stop_process(process: subprocess.Popen[str] | None) -> LaunchResult:
         return LaunchResult(False, f"Failed to stop script: {exc}")
 
     return LaunchResult(True, "Stopped script.")
+
+
+def stop_managed_ahk_scripts(definitions: list[ScriptDefinition]) -> None:
+    if os.name != "nt":
+        return
+
+    script_names = sorted(
+        {
+            Path(definition.entry).name
+            for definition in definitions
+            if definition.kind == "ahk" and Path(definition.entry).suffix.lower() == ".ahk"
+        }
+    )
+    if not script_names:
+        return
+
+    names_literal = ",".join("'" + name.replace("'", "''") + "'" for name in script_names)
+    script = f"""
+$scriptNames = @({names_literal})
+$procs = Get-CimInstance Win32_Process | Where-Object {{
+    $_.Name -like 'AutoHotkey*.exe' -and $_.CommandLine
+}}
+foreach ($proc in $procs) {{
+    foreach ($scriptName in $scriptNames) {{
+        if ($proc.CommandLine -like "*$scriptName*") {{
+            Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
+            break
+        }}
+    }}
+}}
+"""
+    try:
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command", script],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except Exception:
+        return

@@ -45,6 +45,7 @@ from .runtime import (
     project_root,
     resolve_entry,
     resources_root,
+    stop_managed_ahk_scripts,
     stop_process,
 )
 from .updater import SyncResult, sync_scripts
@@ -346,7 +347,7 @@ class OffLimitsWindow(QMainWindow):
         divider.setObjectName("dividerLabel")
         title_left.addWidget(divider)
 
-        subtitle = QLabel("Dark-purple multi-script control deck")
+        subtitle = QLabel("AFK scripts for Call of Duty")
         subtitle.setObjectName("subtitleLabel")
         title_left.addWidget(subtitle)
 
@@ -498,16 +499,16 @@ class OffLimitsWindow(QMainWindow):
         title_col.setSpacing(_s(6))
         top.addLayout(title_col, 1)
 
-        global_title = QLabel("Global Requirements")
+        global_title = QLabel("Setup Requirements")
         global_title.setObjectName("requirementsTitle")
         title_col.addWidget(global_title)
 
-        global_meta = QLabel("Shared setup shown for every script")
+        global_meta = QLabel("Required setup shown for every script")
         global_meta.setObjectName("requirementsMeta")
         title_col.addWidget(global_meta)
 
         global_desc = QLabel(
-            "Use this area for universal setup notes, map prep, and reminders that stay the same for every script."
+            "Follow these steps before selecting and launching any script."
         )
         global_desc.setObjectName("requirementsDesc")
         global_desc.setWordWrap(True)
@@ -953,6 +954,10 @@ class OffLimitsWindow(QMainWindow):
                 QMessageBox.critical(self, "Stop failed", result.message)
                 self._refresh_launch_state()
                 return
+        elif self.running_definition is not None and self.running_definition.id != definition.id:
+            stop_managed_ahk_scripts(self.definitions)
+            self.running_process = None
+            self.running_definition = None
 
         self.selected = definition
         self.game_button.setText(definition.name)
@@ -987,9 +992,9 @@ class OffLimitsWindow(QMainWindow):
                 widget.deleteLater()
 
         items = [
-            "Load into the correct mode before launch.",
-            "Confirm the shared perk loadout is active.",
-            "Replace this filler copy with your final notes.",
+            "Load into Ashes of the Damned Directed mode and go up to Round Cap 7/10/12.",
+            "Stand in the pictured spot and aim at the wooden post.",
+            'Select your desired script, launch it and use the "Toggle Script" keybind to launch.',
         ]
 
         for item in items:
@@ -1083,6 +1088,10 @@ class OffLimitsWindow(QMainWindow):
                 QMessageBox.critical(self, "Stop failed", result.message)
                 self._refresh_launch_state()
                 return
+
+        stop_managed_ahk_scripts(self.definitions)
+        self.running_process = None
+        self.running_definition = None
 
         if not self.keybinds_initialized:
             self.status_label.setText("Status: Click Edit Keybinds and save your keybinds before launch")

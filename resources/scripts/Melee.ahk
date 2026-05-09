@@ -1,4 +1,5 @@
 #Requires AutoHotkey v2.0
+#SingleInstance Force
 #MaxThreadsPerHotkey 2
 #MaxThreads 3
 
@@ -17,7 +18,6 @@ global MeleeKey := "v"
 
 ApplyOverrides()
 ConfigureHotkeys()
-ShowStatus("LOADED")
 
 ApplyOverrides() {
     global VDelay, VDelayRnd, ScoreboardToggling, ToggleKey, ExitKey, ScoreboardKey, MeleeKey

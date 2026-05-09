@@ -1,4 +1,5 @@
 #Requires AutoHotkey v2.0
+#SingleInstance Force
 #MaxThreadsPerHotkey 2
 
 SendMode("Input")
@@ -15,7 +16,6 @@ global MeleeKey := "v"
 
 ApplyOverrides()
 ConfigureHotkeys()
-ShowStatus("LOADED")
 
 ApplyOverrides() {
     global HoldLMBTime, VWaitTime, ScoreboardToggling, ToggleKey, ExitKey, ScoreboardKey, MeleeKey

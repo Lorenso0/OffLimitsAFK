@@ -1,4 +1,5 @@
 #Requires AutoHotkey v2.0
+#SingleInstance Force
 #MaxThreadsPerHotkey 2
 #HotIf WinActive("ahk_exe cod.exe")
 
@@ -18,7 +19,6 @@ global MeleeKey := "v"
 
 ApplyOverrides()
 ConfigureHotkeys()
-ShowStatus("LOADED")
 
 ApplyOverrides() {
     global ResetTime, VWaitTime, ScoreboardToggling, ToggleKey, ExitKey, LethalKey, WeaponSwitchKey, ScoreboardKey, MeleeKey

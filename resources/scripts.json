@@ -277,7 +277,17 @@
           "placeholder": "v"
         }
       ],
-      "timings": [],
+      "timings": [
+        {
+          "key": "scoreboard_toggling",
+          "label": "Scoreboard toggling",
+          "flag": "--scoreboard-toggling",
+          "value": "1",
+          "false_value": "0",
+          "control": "checkbox",
+          "suffix": ""
+        }
+      ],
       "accent": "#8b5cf6"
     },
     {

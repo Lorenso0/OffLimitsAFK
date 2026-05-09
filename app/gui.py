@@ -31,6 +31,7 @@ from .definitions import (
     KeybindDefinition,
     PerkDefinition,
     ScriptDefinition,
+    SharedPerksDefinition,
     TimingDefinition,
     load_definitions,
     load_shared_perks,
@@ -58,6 +59,30 @@ _SF: float = 1.0
 def _s(n: int) -> int:
     """Scale a pixel value by the current screen scale factor."""
     return max(1, int(n * _SF))
+
+
+class ElidedLabel(QLabel):
+    """QLabel that elides text with '...' instead of hard-clipping."""
+
+    def __init__(self, text: str = "", parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._full_text = text
+        self.setText(text)
+
+    def setText(self, text: str) -> None:  # type: ignore[override]
+        self._full_text = text
+        self._update_elide()
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        super().resizeEvent(event)
+        self._update_elide()
+
+    def _update_elide(self) -> None:
+        if not hasattr(self, "_full_text"):
+            return
+        elided = self.fontMetrics().elidedText(self._full_text, Qt.ElideRight, self.width())
+        if elided != QLabel.text(self):
+            QLabel.setText(self, elided)
 
 
 class ThemedDialog(QDialog):
@@ -300,10 +325,10 @@ class OffLimitsWindow(QMainWindow):
         top_row = QHBoxLayout()
         top_row.setSpacing(_s(12))
         top_row.setAlignment(Qt.AlignTop)
-        body_layout.addLayout(top_row)
+        body_layout.addLayout(top_row, 1)
 
         self.selector_panel = self._build_selector_panel()
-        self.selector_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        self.selector_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         top_row.addWidget(self.selector_panel, 1)
 
         self.requirements_panel = self._build_requirements_panel()
@@ -311,7 +336,7 @@ class OffLimitsWindow(QMainWindow):
         top_row.addWidget(self.requirements_panel, 1)
 
         self.perks_panel = self._build_perks_panel()
-        body_layout.addWidget(self.perks_panel)
+        body_layout.addWidget(self.perks_panel, 0)
 
         self.footer = self._build_footer()
         body_layout.addWidget(self.footer)
@@ -364,10 +389,6 @@ class OffLimitsWindow(QMainWindow):
         self.min_button = self._title_button("_")
         self.min_button.clicked.connect(self.showMinimized)
         controls.addWidget(self.min_button)
-
-        self.max_button = self._title_button("[]")
-        self.max_button.clicked.connect(self._toggle_maximize)
-        controls.addWidget(self.max_button)
 
         self.close_button = self._title_button("X", danger=True)
         self.close_button.clicked.connect(self.close)
@@ -531,14 +552,48 @@ class OffLimitsWindow(QMainWindow):
         panel = self._panel()
         layout = panel.layout()
 
-        header = self._section_header("Required Perks & Augments", "", right_small=True)
+        header = self._section_header("Perks & Augments", "", right_small=True)
         layout.addWidget(header)
 
-        self.perk_row = QWidget()
-        self.perk_row_layout = QHBoxLayout(self.perk_row)
-        self.perk_row_layout.setContentsMargins(0, 0, 0, 0)
-        self.perk_row_layout.setSpacing(_s(12))
-        layout.addWidget(self.perk_row)
+        groups = QWidget()
+        self.perk_groups_layout = QHBoxLayout(groups)
+        self.perk_groups_layout.setContentsMargins(0, 0, 0, 0)
+        self.perk_groups_layout.setSpacing(_s(18))
+        layout.addWidget(groups)
+
+        self.required_perks_group = QFrame()
+        self.required_perks_group.setObjectName("innerCard")
+        required_group_layout = QVBoxLayout(self.required_perks_group)
+        required_group_layout.setContentsMargins(_s(14), _s(14), _s(14), _s(14))
+        required_group_layout.setSpacing(_s(12))
+        self.perk_groups_layout.addWidget(self.required_perks_group, 1)
+
+        self.required_perks_label = QLabel("Required Perks")
+        self.required_perks_label.setObjectName("requirementsTitle")
+        required_group_layout.addWidget(self.required_perks_label)
+
+        self.required_perk_row = QWidget()
+        self.required_perk_row_layout = QHBoxLayout(self.required_perk_row)
+        self.required_perk_row_layout.setContentsMargins(0, 0, 0, 0)
+        self.required_perk_row_layout.setSpacing(_s(12))
+        required_group_layout.addWidget(self.required_perk_row)
+
+        self.recommended_perks_group = QFrame()
+        self.recommended_perks_group.setObjectName("innerCard")
+        recommended_group_layout = QVBoxLayout(self.recommended_perks_group)
+        recommended_group_layout.setContentsMargins(_s(14), _s(14), _s(14), _s(14))
+        recommended_group_layout.setSpacing(_s(12))
+        self.perk_groups_layout.addWidget(self.recommended_perks_group, 1)
+
+        self.recommended_perks_label = QLabel("Recommended Perks")
+        self.recommended_perks_label.setObjectName("requirementsTitle")
+        recommended_group_layout.addWidget(self.recommended_perks_label)
+
+        self.recommended_perk_row = QWidget()
+        self.recommended_perk_row_layout = QHBoxLayout(self.recommended_perk_row)
+        self.recommended_perk_row_layout.setContentsMargins(0, 0, 0, 0)
+        self.recommended_perk_row_layout.setSpacing(_s(12))
+        recommended_group_layout.addWidget(self.recommended_perk_row)
 
         return panel
 
@@ -609,21 +664,41 @@ class OffLimitsWindow(QMainWindow):
         layout.addWidget(right_label)
         return frame
 
-    def _render_perks(self) -> None:
-        while self.perk_row_layout.count():
-            item = self.perk_row_layout.takeAt(0)
+    def _clear_perk_layout(self, layout) -> None:
+        while layout.count():
+            item = layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
 
-        for perk in self.shared_perks:
-            self.perk_row_layout.addWidget(self._build_perk_card(perk))
-        self.perk_row_layout.addStretch(1)
+    def _render_perk_row(self, layout, perks: list[PerkDefinition], center: bool = False) -> None:
+        self._clear_perk_layout(layout)
+        if center:
+            layout.addStretch(1)
+        for perk in perks:
+            fw = _s(230) if center else None
+            layout.addWidget(self._build_perk_card(perk, fixed_width=fw))
+        layout.addStretch(1)
 
-    def _build_perk_card(self, perk: PerkDefinition) -> QWidget:
+    def _render_perks(self) -> None:
+        self._render_perk_row(self.required_perk_row_layout, self.shared_perks.required)
+        self._render_perk_row(self.recommended_perk_row_layout, self.shared_perks.recommended, center=True)
+        self.required_perks_group.setVisible(bool(self.shared_perks.required))
+        self.recommended_perks_group.setVisible(bool(self.shared_perks.recommended))
+        req_n = max(1, len(self.shared_perks.required))
+        rec_n = max(1, len(self.shared_perks.recommended))
+        self.perk_groups_layout.setStretch(0, req_n)
+        self.perk_groups_layout.setStretch(1, rec_n)
+
+    def _build_perk_card(self, perk: PerkDefinition, fixed_width: int | None = None) -> QWidget:
         card = QFrame()
         card.setObjectName("perkCard")
-        card.setFixedSize(_s(296), _s(278))
+        card.setFixedHeight(_s(224))
+        if fixed_width is not None:
+            card.setFixedWidth(fixed_width)
+            card.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        else:
+            card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         layout = QVBoxLayout(card)
         layout.setContentsMargins(_s(14), _s(14), _s(14), _s(14))
@@ -661,21 +736,21 @@ class OffLimitsWindow(QMainWindow):
         row = QFrame()
         row.setObjectName("augmentRow")
         layout = QHBoxLayout(row)
-        layout.setContentsMargins(_s(10), _s(8), _s(10), _s(8))
-        layout.setSpacing(_s(10))
+        layout.setContentsMargins(_s(8), _s(7), _s(8), _s(7))
+        layout.setSpacing(_s(8))
 
         slot = QLabel(augment.slot.upper())
         slot.setObjectName("augmentSlot")
-        slot.setFixedWidth(_s(54))
+        slot.setFixedWidth(_s(46))
         layout.addWidget(slot)
 
         icon = QLabel()
-        icon.setPixmap(self._load_pixmap(augment.image, _s(22), _s(22)))
-        icon.setFixedSize(_s(22), _s(22))
+        icon.setPixmap(self._load_pixmap(augment.image, _s(18), _s(18)))
+        icon.setFixedSize(_s(18), _s(18))
         icon.setAlignment(Qt.AlignCenter)
         layout.addWidget(icon)
 
-        name = QLabel(augment.name)
+        name = ElidedLabel(augment.name)
         name.setObjectName("augmentName")
         layout.addWidget(name, 1)
 
@@ -707,6 +782,7 @@ class OffLimitsWindow(QMainWindow):
         entry.setObjectName("timingInput")
         entry.setText(timing.value)
         entry.setFixedWidth(_s(82))
+        entry.returnPressed.connect(self._relaunch_selected_from_inputs)
         layout.addWidget(entry)
         self.timing_inputs[timing.key] = entry
 
@@ -995,6 +1071,7 @@ class OffLimitsWindow(QMainWindow):
             "Load into Ashes of the Damned Directed mode and go up to Round Cap 7/10/12.",
             "Stand in the pictured spot and aim at the wooden post.",
             'Select your desired script, launch it and use the "Toggle Script" keybind to launch.',
+            "Upgrade your gun as much as possible, goal is to kill the zombies with 1 shot.",
         ]
 
         for item in items:
@@ -1081,13 +1158,33 @@ class OffLimitsWindow(QMainWindow):
             self._refresh_launch_state()
             return
 
+        self._start_selected_script(restart_selected=False)
+
+    def _collect_option_overrides(self) -> dict[str, str]:
+        option_overrides: dict[str, str] = {}
+        if self.selected is None:
+            return option_overrides
+
+        timing_map = {timing.key: timing for timing in self.selected.timings}
+        for key, control in self.timing_inputs.items():
+            timing = timing_map[key]
+            if isinstance(control, QLineEdit):
+                option_overrides[key] = control.text().strip()
+            elif isinstance(control, QCheckBox):
+                option_overrides[key] = timing.value if control.isChecked() else timing.false_value
+        for keybind in self.selected.keybinds:
+            option_overrides[keybind.key] = keybind.value
+        return option_overrides
+
+    def _start_selected_script(self, restart_selected: bool) -> None:
         if self._has_running_script():
-            result = self._stop_running_script()
-            if not result.ok:
-                self.status_label.setText(f"Status: {result.message}")
-                QMessageBox.critical(self, "Stop failed", result.message)
-                self._refresh_launch_state()
-                return
+            if restart_selected or not self._is_selected_running():
+                result = self._stop_running_script()
+                if not result.ok:
+                    self.status_label.setText(f"Status: {result.message}")
+                    QMessageBox.critical(self, "Stop failed", result.message)
+                    self._refresh_launch_state()
+                    return
 
         stop_managed_ahk_scripts(self.definitions)
         self.running_process = None
@@ -1103,17 +1200,7 @@ class OffLimitsWindow(QMainWindow):
             self._refresh_keybind_button_state()
             return
 
-        option_overrides: dict[str, str] = {}
-        if self.selected is not None:
-            timing_map = {timing.key: timing for timing in self.selected.timings}
-            for key, control in self.timing_inputs.items():
-                timing = timing_map[key]
-                if isinstance(control, QLineEdit):
-                    option_overrides[key] = control.text().strip()
-                elif isinstance(control, QCheckBox):
-                    option_overrides[key] = timing.value if control.isChecked() else timing.false_value
-            for keybind in self.selected.keybinds:
-                option_overrides[keybind.key] = keybind.value
+        option_overrides = self._collect_option_overrides()
         result = launch_script(self.selected, option_overrides)
         self.status_label.setText(f"Status: {result.message}")
         if result.ok:
@@ -1123,6 +1210,11 @@ class OffLimitsWindow(QMainWindow):
             self._refresh_launch_state()
         else:
             QMessageBox.critical(self, "Launch failed", result.message)
+
+    def _relaunch_selected_from_inputs(self) -> None:
+        if self.selected is None:
+            return
+        self._start_selected_script(restart_selected=True)
 
     def _has_running_script(self) -> bool:
         if self.running_process is None:
@@ -1430,7 +1522,7 @@ class OffLimitsWindow(QMainWindow):
             }}
             #augmentName {{
                 color: #f6f3ff;
-                font: 400 {_s(13)}px "Segoe UI";
+                font: 400 {_s(12)}px "Segoe UI";
             }}
             #footer {{
                 background: #0b0a14;

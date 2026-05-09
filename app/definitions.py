@@ -20,6 +20,12 @@ class PerkDefinition:
 
 
 @dataclass(slots=True)
+class SharedPerksDefinition:
+    required: list[PerkDefinition]
+    recommended: list[PerkDefinition]
+
+
+@dataclass(slots=True)
 class TimingDefinition:
     key: str
     label: str
@@ -190,6 +196,16 @@ def load_definitions(config_path: Path, project_root: Path) -> list[ScriptDefini
     return definitions
 
 
-def load_shared_perks(config_path: Path) -> list[PerkDefinition]:
+def load_shared_perks(config_path: Path) -> SharedPerksDefinition:
     raw = json.loads(config_path.read_text(encoding="utf-8"))
-    return _parse_perks(raw.get("perks", []))
+    if "required_perks" in raw or "recommended_perks" in raw:
+        return SharedPerksDefinition(
+            required=_parse_perks(raw.get("required_perks", [])),
+            recommended=_parse_perks(raw.get("recommended_perks", [])),
+        )
+
+    # Backward compatibility with older flat loadout files.
+    return SharedPerksDefinition(
+        required=_parse_perks(raw.get("perks", [])),
+        recommended=[],
+    )

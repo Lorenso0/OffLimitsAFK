@@ -1,1 +1,3 @@
 sync_to_github.bat
+__pycache__/
+*.py[cod]

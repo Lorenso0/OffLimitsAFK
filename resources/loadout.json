@@ -1,5 +1,5 @@
 {
-  "perks": [
+  "required_perks": [
     {
       "name": "Jugger-Nog",
       "image": "pictures/Jugger-Nog.png",
@@ -22,6 +22,24 @@
       ]
     },
     {
+      "name": "Melee Macchiato",
+      "image": "pictures/Melee Macchiato.png",
+      "augments": [
+        {
+          "slot": "Major",
+          "name": "Vampiritic Extraction",
+          "image": "pictures/Melee Macchiato Major Vampiritic Extraction.png"
+        },
+        {
+          "slot": "Minor",
+          "name": "Mugging",
+          "image": "pictures/Melee Macchiato Minor Mugging.png"
+        }
+      ]
+    }
+  ],
+  "recommended_perks": [
+    {
       "name": "Elemental Pop",
       "image": "pictures/Elemental Pop.png",
       "augments": [
@@ -38,22 +56,6 @@
       ]
     },
     {
-      "name": "Melee Macchiato",
-      "image": "pictures/Melee Macchiato.png",
-      "augments": [
-        {
-          "slot": "Major",
-          "name": "Vampiritic Extraction",
-          "image": "pictures/Melee Macchiato Major Vampiritic Extraction.png"
-        },
-        {
-          "slot": "Minor",
-          "name": "Mugging",
-          "image": "pictures/Melee Macchiato Minor Mugging.png"
-        }
-      ]
-    },
-    {
       "name": "Vulture Aid",
       "image": "pictures/Vulture Aid.png",
       "augments": [
@@ -61,6 +63,17 @@
           "slot": "Major",
           "name": "Armor-Matic",
           "image": "pictures/Vulture Aid Major Armor-Matic.png"
+        }
+      ]
+    },
+    {
+      "name": "Light Mend",
+      "image": "pictures/Light Mend.png",
+      "augments": [
+        {
+          "slot": "Minor",
+          "name": "Extra Strength",
+          "image": "pictures/Light Mend Minor Extra Strength.png"
         }
       ]
     }

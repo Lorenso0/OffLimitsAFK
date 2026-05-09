@@ -13,7 +13,7 @@ import urllib.request
 import zipfile
 
 from .definitions import KeybindDefinition, ScriptDefinition, TimingDefinition
-from .updater import scripts_cache_dir, scripts_json_cache_path
+from .updater import scripts_cache_dir, scripts_json_cache_path, sync_scripts
 
 
 @dataclass(slots=True)
@@ -47,8 +47,9 @@ def resolve_entry(entry: str) -> Path:
     if entry_path.is_absolute():
         return entry_path
 
+    is_cached_script = len(entry_path.parts) > 1 and entry_path.parts[0] == "scripts"
     cache_path = scripts_cache_dir() / entry_path.name
-    if cache_path.exists():
+    if is_cached_script:
         return cache_path
 
     resource_path = resources_root() / entry_path
@@ -289,10 +290,33 @@ def _materialize_if_frozen(source: Path) -> Path:
     if not getattr(sys, "frozen", False):
         return source
 
+    try:
+        source.relative_to(managed_runtime_dir())
+        return source
+    except ValueError:
+        pass
+
+    if scripts_cache_dir() in source.parents:
+        return source
+
     target_dir = Path(tempfile.mkdtemp(prefix="script_host_"))
     target = target_dir / source.name
     target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
     return target
+
+
+def _ensure_script_entry(entry: str) -> Path:
+    resolved = resolve_entry(entry)
+    if resolved.exists():
+        return resolved
+
+    sync_result = sync_scripts()
+    resolved = resolve_entry(entry)
+    if resolved.exists():
+        return resolved
+
+    detail = sync_result.errors[0] if sync_result.errors else "script not found after sync"
+    raise FileNotFoundError(f"Missing script '{entry}'. {detail}")
 
 
 def _build_flag_args(definitions: list[TimingDefinition | KeybindDefinition], overrides: dict[str, str] | None) -> list[str]:
@@ -312,14 +336,15 @@ def build_command(
     definition: ScriptDefinition,
     option_overrides: dict[str, str] | None = None,
 ) -> list[str]:
-    entry = resolve_entry(definition.entry)
     option_args = _build_flag_args(definition.timings + definition.keybinds, option_overrides)
 
     if definition.kind == "python":
+        entry = resolve_entry(definition.entry)
         return [sys.executable, str(entry), *definition.args, *option_args]
 
     if definition.kind == "ahk":
         runtime = ensure_ahk_runtime()
+        entry = _ensure_script_entry(definition.entry)
         script_path = _materialize_if_frozen(entry)
         return [str(runtime), str(script_path), *definition.args, *option_args]
 

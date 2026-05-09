@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
+import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -58,6 +59,38 @@ def _sha_manifest_path() -> Path:
     return _appdata_dir() / "script_shas.json"
 
 
+def _github_token_path() -> Path:
+    return _appdata_dir() / "github_token.txt"
+
+
+def _github_token() -> str:
+    for env_name in ("OFFLIMITS_GITHUB_TOKEN", "GITHUB_TOKEN"):
+        value = os.environ.get(env_name, "").strip()
+        if value:
+            return value
+
+    token_path = _github_token_path()
+    if token_path.exists():
+        try:
+            return token_path.read_text(encoding="utf-8").strip()
+        except Exception:
+            return ""
+
+    return ""
+
+
+def _request_headers(accept: str | None = None) -> dict[str, str]:
+    headers = {"User-Agent": "OffLimitsAFKLauncher"}
+    if accept:
+        headers["Accept"] = accept
+
+    token = _github_token()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    return headers
+
+
 def _load_sha_manifest() -> dict[str, str]:
     path = _sha_manifest_path()
     if not path.exists():
@@ -75,13 +108,18 @@ def _save_sha_manifest(manifest: dict[str, str]) -> None:
 
 
 def _fetch_json(url: str) -> object:
-    request = urllib.request.Request(url, headers=_HEADERS)
+    request = urllib.request.Request(url, headers=_request_headers("application/vnd.github+json"))
     with urllib.request.urlopen(request, timeout=15) as response:
         return json.load(response)
 
 
 def _download_raw(raw_url: str, dest: Path) -> None:
-    request = urllib.request.Request(raw_url, headers={"User-Agent": "OffLimitsAFKLauncher"})
+    parsed = urllib.parse.urlparse(raw_url)
+    if parsed.netloc.lower() == "raw.githubusercontent.com":
+        raw_url = f"{_API_BASE}/contents/{parsed.path.split(f'/{GITHUB_BRANCH}/', 1)[-1]}?ref={GITHUB_BRANCH}"
+        request = urllib.request.Request(raw_url, headers=_request_headers("application/vnd.github.raw"))
+    else:
+        request = urllib.request.Request(raw_url, headers=_request_headers())
     dest.parent.mkdir(parents=True, exist_ok=True)
     with urllib.request.urlopen(request, timeout=30) as response:
         dest.write_bytes(response.read())
@@ -99,7 +137,8 @@ def sync_scripts() -> SyncResult:
         try:
             meta = _fetch_json(scripts_json_api_url)
             remote_sha: str = meta["sha"]  # type: ignore[index]
-            if remote_sha != manifest.get("scripts.json", ""):
+            cached_scripts_json = scripts_json_cache_path()
+            if remote_sha != manifest.get("scripts.json", "") or not cached_scripts_json.exists():
                 _download_raw(scripts_json_raw_url, scripts_json_cache_path())
                 is_new = "scripts.json" not in manifest
                 new_manifest["scripts.json"] = remote_sha
@@ -117,16 +156,20 @@ def sync_scripts() -> SyncResult:
                 name: str = entry["name"]
                 remote_sha = entry["sha"]
                 raw_url: str = entry["download_url"]
-                if remote_sha != manifest.get(name, ""):
-                    _download_raw(raw_url, scripts_cache_dir() / name)
-                    is_new = name not in manifest
-                    new_manifest[name] = remote_sha
-                    (result.new if is_new else result.updated).append(name)
+                cached_script = scripts_cache_dir() / name
+                if remote_sha != manifest.get(name, "") or not cached_script.exists():
+                    try:
+                        _download_raw(raw_url, cached_script)
+                        is_new = name not in manifest
+                        new_manifest[name] = remote_sha
+                        (result.new if is_new else result.updated).append(name)
+                    except Exception as exc:
+                        result.errors.append(f"{name}: {exc}")
         except Exception as exc:
             result.errors.append(f"scripts dir: {exc}")
 
         _save_sha_manifest(new_manifest)
-        result.ok = True
+        result.ok = not result.errors
 
     except Exception as exc:
         result.errors.append(str(exc))

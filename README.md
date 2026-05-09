@@ -9,6 +9,7 @@ One Windows `.exe` that launches many helper scripts from one GUI.
 - One config file controls what appears in GUI.
 - Root-level `.ahk` files auto-appear in dev.
 - `PyInstaller --onefile` builds single `ScriptHost.exe`.
+- Launcher auto-downloads script files from GitHub into `%APPDATA%\OffLimits\AFK\scripts` and loads them from there.
 - Launcher auto-downloads the official runtime into `%APPDATA%\OffLimits\AFK` when needed, and can also use an already installed system runtime.
 
 ## Project layout
@@ -17,8 +18,7 @@ One Windows `.exe` that launches many helper scripts from one GUI.
 - `app/`: GUI, config loading, runtime launching.
 - `resources/scripts.json`: list of scripts shown in GUI.
 - `resources/loadout.json`: shared required perks and augments shown for all scripts.
-- `resources/scripts/`: AHK automation scripts.
-- `resources/imported/`: auto-copied AHK files for build.
+- `resources/scripts/`: dev copy of AHK automation scripts used as GitHub source.
 
 ## Run in dev
 
@@ -38,7 +38,8 @@ Build output lands in `dist/ScriptHost.exe`.
 
 1. Put script file in `resources/scripts/`.
 2. Add entry in `resources/scripts.json`.
-3. Rebuild app.
+3. Push repo update so launcher can download new file.
+4. Rebuild app only if GUI/assets changed.
 
 Example config item:
 
@@ -79,8 +80,9 @@ For AutoHotkey:
 - Use AHK v2 syntax.
 - Launcher can auto-download the official AutoHotkey zip from GitHub, extract `AutoHotkey64.exe`, and cache it in `%APPDATA%\OffLimits\AFK`.
 - If AutoHotkey is already installed on the machine, the launcher can use that too.
+- Built `.exe` does not bundle `.ahk` files. On startup or launch, it syncs `resources/scripts/*.ahk` from GitHub into `%APPDATA%\OffLimits\AFK\scripts` and runs cached copies from there.
+- For private repos, set `OFFLIMITS_GITHUB_TOKEN` or `GITHUB_TOKEN`, or place a personal access token in `%APPDATA%\OffLimits\AFK\github_token.txt`.
 - Any `.ahk` file in project root is auto-detected in dev.
-- Build step copies root `.ahk` files into bundled resources automatically.
 
 ## Recommendation
 

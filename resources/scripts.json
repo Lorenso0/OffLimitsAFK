@@ -277,31 +277,7 @@
           "placeholder": "v"
         }
       ],
-      "timings": [
-        {
-          "key": "v_delay",
-          "label": "Base V Delay",
-          "flag": "--v-delay",
-          "value": "130",
-          "suffix": "ms"
-        },
-        {
-          "key": "scoreboard_toggling",
-          "label": "Scoreboard toggling",
-          "flag": "--scoreboard-toggling",
-          "value": "1",
-          "false_value": "0",
-          "control": "checkbox",
-          "suffix": ""
-        },
-        {
-          "key": "v_delay_random",
-          "label": "Random V Delay",
-          "flag": "--v-delay-random",
-          "value": "79",
-          "suffix": "ms"
-        }
-      ],
+      "timings": [],
       "accent": "#8b5cf6"
     },
     {
@@ -444,7 +420,8 @@
           "label": "Wait after Right Click",
           "flag": "--post-rmb-wait",
           "value": "100",
-          "suffix": "ms"
+          "suffix": "ms",
+          "column": "right"
         },
         {
           "key": "v_wait_time",

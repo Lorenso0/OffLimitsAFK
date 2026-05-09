@@ -48,6 +48,15 @@ from .runtime import (
 )
 from .updater import SyncResult, sync_scripts
 
+# Design resolution height — all pixel constants are authored at this size.
+_DESIGN_H = 1020
+_SF: float = 1.0
+
+
+def _s(n: int) -> int:
+    """Scale a pixel value by the current screen scale factor."""
+    return max(1, int(n * _SF))
+
 
 class ThemedDialog(QDialog):
     def __init__(self, title: str, colors: dict[str, str], parent: QWidget | None = None) -> None:
@@ -61,7 +70,7 @@ class ThemedDialog(QDialog):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(10, 10, 10, 10)
+        outer.setContentsMargins(_s(10), _s(10), _s(10), _s(10))
         outer.setSpacing(0)
 
         self.shell = QFrame()
@@ -74,13 +83,13 @@ class ThemedDialog(QDialog):
         self.titlebar = QFrame()
         self.titlebar.setObjectName("dialogTitlebar")
         titlebar_layout = QHBoxLayout(self.titlebar)
-        titlebar_layout.setContentsMargins(16, 10, 10, 10)
-        titlebar_layout.setSpacing(10)
+        titlebar_layout.setContentsMargins(_s(16), _s(10), _s(10), _s(10))
+        titlebar_layout.setSpacing(_s(10))
         shell_layout.addWidget(self.titlebar)
 
         accent = QFrame()
         accent.setObjectName("dialogAccent")
-        accent.setFixedSize(6, 22)
+        accent.setFixedSize(_s(6), _s(22))
         titlebar_layout.addWidget(accent, 0, Qt.AlignVCenter)
 
         title_label = QLabel(title)
@@ -92,14 +101,14 @@ class ThemedDialog(QDialog):
         close_button = QPushButton("X")
         close_button.setObjectName("dialogCloseButton")
         close_button.setCursor(Qt.PointingHandCursor)
-        close_button.setFixedSize(34, 26)
+        close_button.setFixedSize(_s(34), _s(26))
         close_button.clicked.connect(self.reject)
         titlebar_layout.addWidget(close_button)
 
         self.body = QWidget()
         self.body_layout = QVBoxLayout(self.body)
-        self.body_layout.setContentsMargins(18, 18, 18, 18)
-        self.body_layout.setSpacing(12)
+        self.body_layout.setContentsMargins(_s(18), _s(18), _s(18), _s(18))
+        self.body_layout.setSpacing(_s(12))
         shell_layout.addWidget(self.body)
 
         self._apply_styles()
@@ -110,28 +119,28 @@ class ThemedDialog(QDialog):
             #dialogShell {{
                 background: {self.colors["panel"]};
                 border: 1px solid #6b479d;
-                border-radius: 14px;
+                border-radius: {_s(14)}px;
             }}
             #dialogTitlebar {{
                 background: {self.colors["panel_alt"]};
-                border-top-left-radius: 14px;
-                border-top-right-radius: 14px;
+                border-top-left-radius: {_s(14)}px;
+                border-top-right-radius: {_s(14)}px;
                 border-bottom: 1px solid #6b479d;
             }}
             #dialogAccent {{
                 background: {self.colors["accent"]};
-                border-radius: 3px;
+                border-radius: {_s(3)}px;
             }}
             #dialogTitle {{
                 color: {self.colors["text"]};
-                font: 700 17px "Segoe UI";
+                font: 700 {_s(17)}px "Segoe UI";
             }}
             #dialogCloseButton {{
                 background: {self.colors["panel_alt"]};
                 color: {self.colors["text"]};
                 border: none;
-                border-radius: 8px;
-                font: 700 13px "Segoe UI";
+                border-radius: {_s(8)}px;
+                font: 700 {_s(13)}px "Segoe UI";
             }}
             #dialogCloseButton:hover {{
                 background: {self.colors["danger_hover"]};
@@ -139,27 +148,27 @@ class ThemedDialog(QDialog):
             #dialogCard {{
                 background: {self.colors["card"]};
                 border: 1px solid #312049;
-                border-radius: 12px;
+                border-radius: {_s(12)}px;
             }}
             #dialogHint {{
                 color: {self.colors["muted"]};
-                font: 400 13px "Segoe UI";
+                font: 400 {_s(13)}px "Segoe UI";
             }}
             #timingTitle {{
                 color: {self.colors["text"]};
-                font: 700 15px "Segoe UI";
+                font: 700 {_s(15)}px "Segoe UI";
             }}
             #timingLabel {{
                 color: {self.colors["text"]};
-                font: 400 13px "Segoe UI";
+                font: 400 {_s(13)}px "Segoe UI";
             }}
             #timingInput {{
                 background: {self.colors["panel_alt"]};
                 color: {self.colors["text"]};
                 border: 1px solid #312049;
-                border-radius: 8px;
-                padding: 8px 10px;
-                font: 400 13px "Segoe UI";
+                border-radius: {_s(8)}px;
+                padding: {_s(8)}px {_s(10)}px;
+                font: 400 {_s(13)}px "Segoe UI";
             }}
             #timingInput:focus {{
                 border: 1px solid {self.colors["accent"]};
@@ -168,9 +177,9 @@ class ThemedDialog(QDialog):
                 background: {self.colors["panel_alt"]};
                 color: {self.colors["text"]};
                 border: 1px solid #7148ad;
-                border-radius: 10px;
-                padding: 12px 18px;
-                font: 700 14px "Segoe UI";
+                border-radius: {_s(10)}px;
+                padding: {_s(12)}px {_s(18)}px;
+                font: 700 {_s(14)}px "Segoe UI";
             }}
             #dialogGhostButton:hover {{
                 background: {self.colors["hover"]};
@@ -179,9 +188,9 @@ class ThemedDialog(QDialog):
                 background: {self.colors["button"]};
                 color: {self.colors["text"]};
                 border: 1px solid {self.colors["accent"]};
-                border-radius: 10px;
-                padding: 12px 18px;
-                font: 700 14px "Segoe UI";
+                border-radius: {_s(10)}px;
+                padding: {_s(12)}px {_s(18)}px;
+                font: 700 {_s(14)}px "Segoe UI";
             }}
             #dialogSaveButton:hover {{
                 background: {self.colors["button_hover"]};
@@ -212,8 +221,8 @@ class OffLimitsWindow(QMainWindow):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.resize(1360, 1020)
-        self.setMinimumSize(1260, 980)
+        self.resize(_s(1360), _s(1020))
+        self.setMinimumSize(_s(1260), _s(980))
 
         self.definitions = load_definitions(
             active_scripts_json_path(),
@@ -267,7 +276,7 @@ class OffLimitsWindow(QMainWindow):
         self.setCentralWidget(outer)
 
         outer_layout = QVBoxLayout(outer)
-        outer_layout.setContentsMargins(10, 10, 10, 10)
+        outer_layout.setContentsMargins(_s(10), _s(10), _s(10), _s(10))
         outer_layout.setSpacing(0)
 
         self.shell = QFrame()
@@ -281,12 +290,12 @@ class OffLimitsWindow(QMainWindow):
 
         body = QWidget()
         body_layout = QVBoxLayout(body)
-        body_layout.setContentsMargins(16, 14, 16, 14)
-        body_layout.setSpacing(14)
+        body_layout.setContentsMargins(_s(16), _s(14), _s(16), _s(14))
+        body_layout.setSpacing(_s(14))
         shell_layout.addWidget(body)
 
         top_row = QHBoxLayout()
-        top_row.setSpacing(12)
+        top_row.setSpacing(_s(12))
         top_row.setAlignment(Qt.AlignTop)
         body_layout.addLayout(top_row)
 
@@ -308,18 +317,18 @@ class OffLimitsWindow(QMainWindow):
         self.titlebar = QFrame()
         self.titlebar.setObjectName("titlebar")
         layout = QHBoxLayout(self.titlebar)
-        layout.setContentsMargins(18, 10, 10, 10)
+        layout.setContentsMargins(_s(18), _s(10), _s(10), _s(10))
         layout.setSpacing(0)
         parent_layout.addWidget(self.titlebar)
 
         title_left = QHBoxLayout()
-        title_left.setSpacing(14)
+        title_left.setSpacing(_s(14))
         layout.addLayout(title_left)
 
         logo = QLabel()
         logo.setObjectName("logoLabel")
-        logo.setPixmap(self._load_pixmap("pictures/logo.png", 24, 24))
-        logo.setFixedSize(28, 28)
+        logo.setPixmap(self._load_pixmap("pictures/logo.png", _s(24), _s(24)))
+        logo.setFixedSize(_s(28), _s(28))
         logo.setAlignment(Qt.AlignCenter)
         title_left.addWidget(logo)
 
@@ -346,7 +355,7 @@ class OffLimitsWindow(QMainWindow):
         layout.addWidget(self.runtime_badge, 0, Qt.AlignRight)
 
         controls = QHBoxLayout()
-        controls.setSpacing(6)
+        controls.setSpacing(_s(6))
         layout.addLayout(controls)
 
         self.min_button = self._title_button("_")
@@ -364,7 +373,7 @@ class OffLimitsWindow(QMainWindow):
     def _title_button(self, text: str, danger: bool = False, width: int = 40) -> QPushButton:
         button = QPushButton(text)
         button.setCursor(Qt.PointingHandCursor)
-        button.setFixedSize(width, 28)
+        button.setFixedSize(_s(width), _s(28))
         base = self.colors["panel_alt"]
         hover = self.colors["danger_hover"] if danger else self.colors["hover"]
         button.setStyleSheet(
@@ -373,8 +382,8 @@ class OffLimitsWindow(QMainWindow):
                 background: {base};
                 color: {self.colors["text"]};
                 border: none;
-                border-radius: 8px;
-                font: 700 13px "Segoe UI";
+                border-radius: {_s(8)}px;
+                font: 700 {_s(13)}px "Segoe UI";
             }}
             QPushButton:hover {{
                 background: {hover};
@@ -407,13 +416,13 @@ class OffLimitsWindow(QMainWindow):
         selected_bar = QFrame()
         selected_bar.setObjectName("selectedBar")
         selected_layout = QHBoxLayout(selected_bar)
-        selected_layout.setContentsMargins(14, 10, 14, 10)
-        selected_layout.setSpacing(12)
+        selected_layout.setContentsMargins(_s(14), _s(10), _s(14), _s(10))
+        selected_layout.setSpacing(_s(12))
         inner_layout.addWidget(selected_bar)
 
         badge = QLabel("[*]")
         badge.setObjectName("selectedBadge")
-        badge.setFixedWidth(42)
+        badge.setFixedWidth(_s(42))
         badge.setAlignment(Qt.AlignCenter)
         selected_layout.addWidget(badge)
 
@@ -430,11 +439,11 @@ class OffLimitsWindow(QMainWindow):
 
         self.selector_variables_card = QFrame()
         self.selector_variables_card.setObjectName("innerCard")
-        self.selector_variables_card.setMinimumHeight(168)
+        self.selector_variables_card.setMinimumHeight(_s(168))
         self.selector_variables_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         selector_vars_layout = QVBoxLayout(self.selector_variables_card)
-        selector_vars_layout.setContentsMargins(12, 12, 12, 12)
-        selector_vars_layout.setSpacing(8)
+        selector_vars_layout.setContentsMargins(_s(12), _s(12), _s(12), _s(12))
+        selector_vars_layout.setSpacing(_s(8))
         inner_layout.addWidget(self.selector_variables_card)
 
         selector_vars_title = QLabel("Script Variables")
@@ -449,7 +458,7 @@ class OffLimitsWindow(QMainWindow):
         self.timing_container = QWidget()
         self.timing_layout = QVBoxLayout(self.timing_container)
         self.timing_layout.setContentsMargins(0, 0, 0, 0)
-        self.timing_layout.setSpacing(8)
+        self.timing_layout.setSpacing(_s(8))
         self.timing_layout.setAlignment(Qt.AlignTop)
         selector_vars_layout.addWidget(self.timing_container)
 
@@ -468,15 +477,15 @@ class OffLimitsWindow(QMainWindow):
         layout.addWidget(self.requirements_inner)
 
         top = QHBoxLayout()
-        top.setSpacing(14)
+        top.setSpacing(_s(14))
         inner_layout.addLayout(top)
 
         placeholder = QFrame()
         placeholder.setObjectName("previewBox")
-        placeholder.setFixedSize(78, 78)
+        placeholder.setFixedSize(_s(78), _s(78))
         preview_layout = QVBoxLayout(placeholder)
         preview_layout.setContentsMargins(0, 0, 0, 0)
-        preview_layout.setSpacing(6)
+        preview_layout.setSpacing(_s(6))
         preview_layout.setAlignment(Qt.AlignCenter)
         preview_icon = QLabel("IMG")
         preview_icon.setObjectName("previewText")
@@ -484,7 +493,7 @@ class OffLimitsWindow(QMainWindow):
         top.addWidget(placeholder, 0, Qt.AlignTop)
 
         title_col = QVBoxLayout()
-        title_col.setSpacing(6)
+        title_col.setSpacing(_s(6))
         top.addLayout(title_col, 1)
 
         global_title = QLabel("Global Requirements")
@@ -510,7 +519,7 @@ class OffLimitsWindow(QMainWindow):
         self.setup_container = QWidget()
         self.setup_layout = QVBoxLayout(self.setup_container)
         self.setup_layout.setContentsMargins(0, 0, 0, 0)
-        self.setup_layout.setSpacing(6)
+        self.setup_layout.setSpacing(_s(6))
         inner_layout.addWidget(self.setup_container)
 
         return panel
@@ -525,7 +534,7 @@ class OffLimitsWindow(QMainWindow):
         self.perk_row = QWidget()
         self.perk_row_layout = QHBoxLayout(self.perk_row)
         self.perk_row_layout.setContentsMargins(0, 0, 0, 0)
-        self.perk_row_layout.setSpacing(12)
+        self.perk_row_layout.setSpacing(_s(12))
         layout.addWidget(self.perk_row)
 
         return panel
@@ -534,8 +543,8 @@ class OffLimitsWindow(QMainWindow):
         footer = QFrame()
         footer.setObjectName("footer")
         layout = QHBoxLayout(footer)
-        layout.setContentsMargins(18, 12, 18, 12)
-        layout.setSpacing(10)
+        layout.setContentsMargins(_s(18), _s(12), _s(18), _s(12))
+        layout.setSpacing(_s(10))
 
         dot = QLabel("*")
         dot.setObjectName("statusDot")
@@ -554,8 +563,8 @@ class OffLimitsWindow(QMainWindow):
         panel = QFrame()
         panel.setObjectName("panel")
         layout = QVBoxLayout(panel)
-        layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(16)
+        layout.setContentsMargins(_s(18), _s(18), _s(18), _s(18))
+        layout.setSpacing(_s(16))
         layout.setAlignment(Qt.AlignTop)
         return panel
 
@@ -563,8 +572,8 @@ class OffLimitsWindow(QMainWindow):
         card = QFrame()
         card.setObjectName("innerCard")
         layout = QVBoxLayout(card)
-        layout.setContentsMargins(14, 14, 14, 14)
-        layout.setSpacing(12)
+        layout.setContentsMargins(_s(14), _s(14), _s(14), _s(14))
+        layout.setSpacing(_s(12))
         layout.setAlignment(Qt.AlignTop)
         return card
 
@@ -575,12 +584,12 @@ class OffLimitsWindow(QMainWindow):
         layout.setSpacing(0)
 
         left = QHBoxLayout()
-        left.setSpacing(12)
+        left.setSpacing(_s(12))
         layout.addLayout(left)
 
         accent = QFrame()
         accent.setObjectName("sectionAccent")
-        accent.setFixedSize(6, 28)
+        accent.setFixedSize(_s(6), _s(28))
         left.addWidget(accent)
 
         title_label = QLabel(title)
@@ -608,24 +617,24 @@ class OffLimitsWindow(QMainWindow):
     def _build_perk_card(self, perk: PerkDefinition) -> QWidget:
         card = QFrame()
         card.setObjectName("perkCard")
-        card.setFixedSize(296, 278)
+        card.setFixedSize(_s(296), _s(278))
 
         layout = QVBoxLayout(card)
-        layout.setContentsMargins(14, 14, 14, 14)
-        layout.setSpacing(10)
+        layout.setContentsMargins(_s(14), _s(14), _s(14), _s(14))
+        layout.setSpacing(_s(10))
 
         head = QHBoxLayout()
-        head.setSpacing(12)
+        head.setSpacing(_s(12))
         layout.addLayout(head)
 
         icon = QLabel()
-        icon.setPixmap(self._load_pixmap(perk.image, 48, 48))
-        icon.setFixedSize(48, 48)
+        icon.setPixmap(self._load_pixmap(perk.image, _s(48), _s(48)))
+        icon.setFixedSize(_s(48), _s(48))
         icon.setAlignment(Qt.AlignCenter)
         head.addWidget(icon, 0, Qt.AlignTop)
 
         title_col = QVBoxLayout()
-        title_col.setSpacing(4)
+        title_col.setSpacing(_s(4))
         head.addLayout(title_col, 1)
 
         perk_title = QLabel(perk.name)
@@ -646,17 +655,17 @@ class OffLimitsWindow(QMainWindow):
         row = QFrame()
         row.setObjectName("augmentRow")
         layout = QHBoxLayout(row)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(10)
+        layout.setContentsMargins(_s(10), _s(8), _s(10), _s(8))
+        layout.setSpacing(_s(10))
 
         slot = QLabel(augment.slot.upper())
         slot.setObjectName("augmentSlot")
-        slot.setFixedWidth(54)
+        slot.setFixedWidth(_s(54))
         layout.addWidget(slot)
 
         icon = QLabel()
-        icon.setPixmap(self._load_pixmap(augment.image, 22, 22))
-        icon.setFixedSize(22, 22)
+        icon.setPixmap(self._load_pixmap(augment.image, _s(22), _s(22)))
+        icon.setFixedSize(_s(22), _s(22))
         icon.setAlignment(Qt.AlignCenter)
         layout.addWidget(icon)
 
@@ -670,13 +679,13 @@ class OffLimitsWindow(QMainWindow):
         row = QWidget()
         layout = QHBoxLayout(row)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
+        layout.setSpacing(_s(8))
 
         if timing.control == "checkbox":
             checkbox = QCheckBox(timing.label)
             checkbox.setObjectName("timingCheckbox")
             checkbox.setChecked(timing.value.lower() in {"1", "true", "yes", "on"})
-            checkbox.setMinimumWidth(170)
+            checkbox.setMinimumWidth(_s(170))
             layout.addStretch(1)
             layout.addWidget(checkbox, 0, Qt.AlignHCenter)
             layout.addStretch(1)
@@ -685,13 +694,13 @@ class OffLimitsWindow(QMainWindow):
 
         label = QLabel(timing.label)
         label.setObjectName("timingLabel")
-        label.setMinimumWidth(138)
+        label.setMinimumWidth(_s(138))
         layout.addWidget(label)
 
         entry = QLineEdit()
         entry.setObjectName("timingInput")
         entry.setText(timing.value)
-        entry.setFixedWidth(82)
+        entry.setFixedWidth(_s(82))
         layout.addWidget(entry)
         self.timing_inputs[timing.key] = entry
 
@@ -805,13 +814,13 @@ class OffLimitsWindow(QMainWindow):
 
     def _open_keybind_dialog(self) -> None:
         dialog = ThemedDialog("Global Keybinds", self.colors, self)
-        dialog.resize(420, 380)
+        dialog.resize(_s(420), _s(380))
 
         card = QFrame()
         card.setObjectName("dialogCard")
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(14, 14, 14, 14)
-        card_layout.setSpacing(10)
+        card_layout.setContentsMargins(_s(14), _s(14), _s(14), _s(14))
+        card_layout.setSpacing(_s(10))
         dialog.body_layout.addWidget(card)
 
         title = QLabel("Global Keybinds")
@@ -828,11 +837,11 @@ class OffLimitsWindow(QMainWindow):
             row = QWidget(dialog)
             row_layout = QHBoxLayout(row)
             row_layout.setContentsMargins(0, 0, 0, 0)
-            row_layout.setSpacing(8)
+            row_layout.setSpacing(_s(8))
 
             label = QLabel(keybind.label)
             label.setObjectName("timingLabel")
-            label.setMinimumWidth(150)
+            label.setMinimumWidth(_s(150))
             row_layout.addWidget(label)
 
             entry = QLineEdit()
@@ -962,7 +971,7 @@ class OffLimitsWindow(QMainWindow):
             row = QWidget()
             layout = QHBoxLayout(row)
             layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(10)
+            layout.setSpacing(_s(10))
 
             bullet = QLabel("*")
             bullet.setObjectName("setupBullet")
@@ -990,16 +999,16 @@ class OffLimitsWindow(QMainWindow):
         split = QWidget()
         split_layout = QHBoxLayout(split)
         split_layout.setContentsMargins(0, 0, 0, 0)
-        split_layout.setSpacing(18)
+        split_layout.setSpacing(_s(18))
 
         left_col = QVBoxLayout()
         left_col.setContentsMargins(0, 0, 0, 0)
-        left_col.setSpacing(10)
+        left_col.setSpacing(_s(10))
         split_layout.addLayout(left_col, 1)
 
         right_col = QVBoxLayout()
         right_col.setContentsMargins(0, 0, 0, 0)
-        right_col.setSpacing(10)
+        right_col.setSpacing(_s(10))
         split_layout.addLayout(right_col, 0)
 
         right_rows: list[tuple[QWidget, bool]] = []  # (widget, is_checkbox)
@@ -1126,302 +1135,302 @@ class OffLimitsWindow(QMainWindow):
 
     def _launch_button_style(self, active: bool) -> str:
         if active:
-            return """
-                QPushButton {
+            return f"""
+                QPushButton {{
                     background: #7c3aed;
                     color: #f6f3ff;
                     border: 1px solid #a855f7;
-                    border-radius: 10px;
-                    padding: 16px;
-                    font: 700 18px "Segoe UI";
-                }
-                QPushButton:hover {
+                    border-radius: {_s(10)}px;
+                    padding: {_s(16)}px;
+                    font: 700 {_s(18)}px "Segoe UI";
+                }}
+                QPushButton:hover {{
                     background: #8b5cf6;
-                }
+                }}
             """
-        return """
-                QPushButton {
+        return f"""
+                QPushButton {{
                     background: #0b0a14;
                     color: #f6f3ff;
                     border: 1px solid #312049;
-                    border-radius: 10px;
-                    padding: 16px;
-                    font: 700 18px "Segoe UI";
-                }
-                QPushButton:hover {
+                    border-radius: {_s(10)}px;
+                    padding: {_s(16)}px;
+                    font: 700 {_s(18)}px "Segoe UI";
+                }}
+                QPushButton:hover {{
                     background: #1a1328;
-                }
+                }}
             """
 
     def _apply_styles(self) -> None:
         self.setStyleSheet(
-            """
-            #shell {
+            f"""
+            #shell {{
                 background: #090812;
                 border: 1px solid #6b479d;
-                border-radius: 14px;
-            }
-            #titlebar {
+                border-radius: {_s(14)}px;
+            }}
+            #titlebar {{
                 background: #0b0a14;
-                border-top-left-radius: 14px;
-                border-top-right-radius: 14px;
+                border-top-left-radius: {_s(14)}px;
+                border-top-right-radius: {_s(14)}px;
                 border-bottom: 1px solid #6b479d;
-            }
-            #afkLabel {
+            }}
+            #afkLabel {{
                 color: #a855f7;
-                font: 700 18px "Segoe UI";
-            }
-            #brandLabel {
+                font: 700 {_s(18)}px "Segoe UI";
+            }}
+            #brandLabel {{
                 color: #f6f3ff;
-                font: 700 20px "Segoe UI";
-            }
-            #dividerLabel {
+                font: 700 {_s(20)}px "Segoe UI";
+            }}
+            #dividerLabel {{
                 color: #7b6aa0;
-                font: 400 16px "Segoe UI";
-            }
-            #subtitleLabel {
+                font: 400 {_s(16)}px "Segoe UI";
+            }}
+            #subtitleLabel {{
                 color: #b7abd4;
-                font: 400 14px "Segoe UI";
-            }
-            #runtimeBadge {
+                font: 400 {_s(14)}px "Segoe UI";
+            }}
+            #runtimeBadge {{
                 background: #120d1d;
                 color: #cdb8f4;
                 border: 1px solid #4d3275;
-                border-radius: 10px;
-                padding: 6px 12px;
-                margin-right: 10px;
-                font: 700 12px "Segoe UI";
-            }
-            #panel {
+                border-radius: {_s(10)}px;
+                padding: {_s(6)}px {_s(12)}px;
+                margin-right: {_s(10)}px;
+                font: 700 {_s(12)}px "Segoe UI";
+            }}
+            #panel {{
                 background: #10101a;
                 border: 1px solid #312049;
-                border-radius: 12px;
-            }
-            #innerCard {
+                border-radius: {_s(12)}px;
+            }}
+            #innerCard {{
                 background: #0a0912;
                 border: 1px solid #312049;
-                border-radius: 12px;
-            }
-            #sectionAccent {
+                border-radius: {_s(12)}px;
+            }}
+            #sectionAccent {{
                 background: #a855f7;
-                border-radius: 3px;
-            }
-            #sectionTitle {
+                border-radius: {_s(3)}px;
+            }}
+            #sectionTitle {{
                 color: #f6f3ff;
-                font: 700 18px "Segoe UI";
-            }
-            #sectionRight {
+                font: 700 {_s(18)}px "Segoe UI";
+            }}
+            #sectionRight {{
                 color: #a855f7;
-                font: 700 19px "Segoe UI Symbol";
-            }
-            #sectionRightSmall {
+                font: 700 {_s(19)}px "Segoe UI Symbol";
+            }}
+            #sectionRightSmall {{
                 color: #b7abd4;
-                font: italic 13px "Segoe UI";
-            }
-            #selectorButton {
+                font: italic {_s(13)}px "Segoe UI";
+            }}
+            #selectorButton {{
                 background: #0b0a14;
                 color: #f6f3ff;
                 border: 1px solid #7148ad;
-                border-radius: 10px;
-                padding: 16px 18px;
+                border-radius: {_s(10)}px;
+                padding: {_s(16)}px {_s(18)}px;
                 text-align: left;
-                font: 400 16px "Segoe UI";
-            }
-            #selectorButton:hover {
+                font: 400 {_s(16)}px "Segoe UI";
+            }}
+            #selectorButton:hover {{
                 background: #1a1328;
-            }
-            #selectedBar {
+            }}
+            #selectedBar {{
                 background: #0b0a14;
                 border: 1px solid #312049;
-                border-radius: 10px;
-            }
-            #selectedBadge {
+                border-radius: {_s(10)}px;
+            }}
+            #selectedBadge {{
                 background: #27153b;
                 color: #a855f7;
                 border: 1px solid #261938;
-                border-radius: 8px;
-                font: 700 13px "Segoe UI";
-            }
-            #selectedScriptLabel {
+                border-radius: {_s(8)}px;
+                font: 700 {_s(13)}px "Segoe UI";
+            }}
+            #selectedScriptLabel {{
                 color: #f6f3ff;
-                font: 400 15px "Segoe UI";
-            }
-            #inlineKeybindButton {
+                font: 400 {_s(15)}px "Segoe UI";
+            }}
+            #inlineKeybindButton {{
                 background: transparent;
                 color: #b7abd4;
                 border: none;
                 padding: 2px 0px;
-                font: 600 12px "Segoe UI";
+                font: 600 {_s(12)}px "Segoe UI";
                 text-align: right;
-            }
-            #inlineKeybindButton:hover {
+            }}
+            #inlineKeybindButton:hover {{
                 color: #f6f3ff;
                 text-decoration: underline;
-            }
-            #inlineKeybindButton[attention="true"] {
+            }}
+            #inlineKeybindButton[attention="true"] {{
                 color: #f6f3ff;
                 border-bottom: 1px solid #a855f7;
-            }
-            #inlineKeybindButton[attention="true"]:hover {
+            }}
+            #inlineKeybindButton[attention="true"]:hover {{
                 color: #ffffff;
                 text-decoration: underline;
-            }
-            #infoIcon {
+            }}
+            #infoIcon {{
                 background: #0b0a14;
                 color: #a855f7;
                 border: 1px solid #7148ad;
-                border-radius: 15px;
-                font: 700 17px "Consolas";
-            }
-            #previewBox {
+                border-radius: {_s(15)}px;
+                font: 700 {_s(17)}px "Consolas";
+            }}
+            #previewBox {{
                 background: #120d1d;
                 border: 1px solid #5a3d86;
-                border-radius: 12px;
-            }
-            #previewText {
+                border-radius: {_s(12)}px;
+            }}
+            #previewText {{
                 color: #a855f7;
-                font: 700 16px "Segoe UI";
-            }
-            #requirementsTitle {
+                font: 700 {_s(16)}px "Segoe UI";
+            }}
+            #requirementsTitle {{
                 color: #f6f3ff;
-                font: 700 18px "Segoe UI";
-            }
-            #requirementsMeta {
+                font: 700 {_s(18)}px "Segoe UI";
+            }}
+            #requirementsMeta {{
                 color: #b7abd4;
-                font: 400 13px "Segoe UI";
-            }
-            #requirementsDesc {
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #requirementsDesc {{
                 color: #b7abd4;
-                font: 400 13px "Segoe UI";
-            }
-            #dividerLine {
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #dividerLine {{
                 background: #312049;
-            }
-            #setupBullet {
+            }}
+            #setupBullet {{
                 color: #a855f7;
-                font: 700 14px "Segoe UI";
-            }
-            #setupItem {
+                font: 700 {_s(14)}px "Segoe UI";
+            }}
+            #setupItem {{
                 color: #f6f3ff;
-                font: 400 13px "Segoe UI";
-            }
-            #timingTitle {
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #timingTitle {{
                 color: #f6f3ff;
-                font: 700 15px "Segoe UI";
-            }
-            #timingLabel {
+                font: 700 {_s(15)}px "Segoe UI";
+            }}
+            #timingLabel {{
                 color: #f6f3ff;
-                font: 400 13px "Segoe UI";
-            }
-            #timingCheckbox {
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #timingCheckbox {{
                 color: #f6f3ff;
-                spacing: 10px;
-                font: 400 13px "Segoe UI";
-            }
-            #timingCheckbox::indicator {
-                width: 16px;
-                height: 16px;
-                border-radius: 4px;
+                spacing: {_s(10)}px;
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #timingCheckbox::indicator {{
+                width: {_s(16)}px;
+                height: {_s(16)}px;
+                border-radius: {_s(4)}px;
                 border: 1px solid #5d4189;
                 background: #0b0a14;
-            }
-            #timingCheckbox::indicator:checked {
+            }}
+            #timingCheckbox::indicator:checked {{
                 background: #7c3aed;
                 border: 1px solid #a855f7;
-            }
-            #timingInput {
+            }}
+            #timingInput {{
                 background: #0b0a14;
                 color: #f6f3ff;
                 border: 1px solid #312049;
-                border-radius: 8px;
-                padding: 8px 10px;
-                font: 400 13px "Segoe UI";
-            }
-            #timingScroll {
+                border-radius: {_s(8)}px;
+                padding: {_s(8)}px {_s(10)}px;
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #timingScroll {{
                 background: transparent;
                 border: none;
-            }
-            #timingScroll QScrollBar:vertical {
+            }}
+            #timingScroll QScrollBar:vertical {{
                 background: #120d1d;
-                width: 10px;
-                margin: 2px 0 2px 4px;
-                border-radius: 5px;
-            }
-            #timingScroll QScrollBar::handle:vertical {
+                width: {_s(10)}px;
+                margin: 2px 0 2px {_s(4)}px;
+                border-radius: {_s(5)}px;
+            }}
+            #timingScroll QScrollBar::handle:vertical {{
                 background: #5d4189;
-                min-height: 24px;
-                border-radius: 5px;
-            }
+                min-height: {_s(24)}px;
+                border-radius: {_s(5)}px;
+            }}
             #timingScroll QScrollBar::add-line:vertical,
             #timingScroll QScrollBar::sub-line:vertical,
             #timingScroll QScrollBar::add-page:vertical,
-            #timingScroll QScrollBar::sub-page:vertical {
+            #timingScroll QScrollBar::sub-page:vertical {{
                 background: transparent;
                 height: 0px;
-            }
-            #timingSuffix {
+            }}
+            #timingSuffix {{
                 color: #b7abd4;
-                font: 400 12px "Segoe UI";
-            }
-            #perkCard {
+                font: 400 {_s(12)}px "Segoe UI";
+            }}
+            #perkCard {{
                 background: #0a0912;
                 border: 1px solid #5d4189;
-                border-radius: 12px;
-            }
-            #perkTitle {
+                border-radius: {_s(12)}px;
+            }}
+            #perkTitle {{
                 color: #f6f3ff;
-                font: 700 16px "Segoe UI";
-            }
-            #perkSummary {
+                font: 700 {_s(16)}px "Segoe UI";
+            }}
+            #perkSummary {{
                 color: #b7abd4;
-                font: 400 13px "Segoe UI";
-            }
-            #augmentRow {
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #augmentRow {{
                 background: #27153b;
                 border: 1px solid #261938;
-                border-radius: 9px;
-            }
-            #augmentSlot {
+                border-radius: {_s(9)}px;
+            }}
+            #augmentSlot {{
                 color: #a855f7;
-                font: 700 10px "Segoe UI";
-            }
-            #augmentName {
+                font: 700 {_s(10)}px "Segoe UI";
+            }}
+            #augmentName {{
                 color: #f6f3ff;
-                font: 400 13px "Segoe UI";
-            }
-            #footer {
+                font: 400 {_s(13)}px "Segoe UI";
+            }}
+            #footer {{
                 background: #0b0a14;
                 border: 1px solid #6b479d;
-                border-radius: 12px;
-            }
-            #statusDot {
+                border-radius: {_s(12)}px;
+            }}
+            #statusDot {{
                 color: #a855f7;
-                font: 700 18px "Segoe UI";
-            }
-            #statusLabel {
+                font: 700 {_s(18)}px "Segoe UI";
+            }}
+            #statusLabel {{
                 color: #f6f3ff;
-                font: 400 15px "Segoe UI";
-            }
-            #footerDots {
+                font: 400 {_s(15)}px "Segoe UI";
+            }}
+            #footerDots {{
                 color: #a855f7;
-                font: 700 18px "Segoe UI";
-            }
-            QMenu#scriptMenu {
+                font: 700 {_s(18)}px "Segoe UI";
+            }}
+            QMenu#scriptMenu {{
                 background: #0a0912;
                 color: #f6f3ff;
                 border: 1px solid #312049;
-                padding: 8px;
-            }
-            QMenu#scriptMenu::item {
+                padding: {_s(8)}px;
+            }}
+            QMenu#scriptMenu::item {{
                 background: transparent;
-                padding: 10px 14px;
+                padding: {_s(10)}px {_s(14)}px;
                 border: 1px solid #312049;
-                margin-bottom: 6px;
-                font: 400 14px "Segoe UI";
-            }
-            QMenu#scriptMenu::item:selected {
+                margin-bottom: {_s(6)}px;
+                font: 400 {_s(14)}px "Segoe UI";
+            }}
+            QMenu#scriptMenu::item:selected {{
                 background: #27153b;
-            }
+            }}
             """
         )
         self.launch_button.setStyleSheet(self._launch_button_style(active=False))
@@ -1485,8 +1494,15 @@ def launch() -> None:
     owns_app = app is None
     if app is None:
         app = QApplication(sys.argv)
+
+    global _SF
+    screen = app.primaryScreen()
+    if screen:
+        available_h = screen.availableGeometry().height()
+        _SF = min(1.0, max(0.65, available_h / _DESIGN_H))
+
     app.setStyle("Fusion")
-    ui_font = QFont("Segoe UI", 11)
+    ui_font = QFont("Segoe UI", max(8, int(11 * _SF)))
     ui_font.setStyleStrategy(QFont.PreferAntialias)
     app.setFont(ui_font)
     app.setQuitOnLastWindowClosed(True)
@@ -1494,4 +1510,3 @@ def launch() -> None:
     window.show()
     if owns_app:
         app.exec()
-

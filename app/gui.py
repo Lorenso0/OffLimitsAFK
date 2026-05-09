@@ -554,9 +554,12 @@ class OffLimitsWindow(QMainWindow):
         self.status_label.setObjectName("statusLabel")
         layout.addWidget(self.status_label, 1)
 
-        dots = QLabel("...")
-        dots.setObjectName("footerDots")
-        layout.addWidget(dots, 0, Qt.AlignRight)
+        self.sync_button = QPushButton("↺ Sync")
+        self.sync_button.setObjectName("syncButton")
+        self.sync_button.setCursor(Qt.PointingHandCursor)
+        self.sync_button.setToolTip("Re-download scripts from GitHub")
+        self.sync_button.clicked.connect(self._start_sync)
+        layout.addWidget(self.sync_button, 0, Qt.AlignRight)
         return footer
 
     def _panel(self) -> QFrame:
@@ -1431,6 +1434,22 @@ class OffLimitsWindow(QMainWindow):
             QMenu#scriptMenu::item:selected {{
                 background: #27153b;
             }}
+            #syncButton {{
+                background: #0b0a14;
+                color: #b7abd4;
+                border: 1px solid #312049;
+                border-radius: {_s(8)}px;
+                padding: {_s(4)}px {_s(10)}px;
+                font: 600 {_s(12)}px "Segoe UI";
+            }}
+            #syncButton:hover {{
+                background: #1a1328;
+                color: #f6f3ff;
+            }}
+            #syncButton:disabled {{
+                color: #5a4d74;
+                border-color: #1e1530;
+            }}
             """
         )
         self.launch_button.setStyleSheet(self._launch_button_style(active=False))
@@ -1454,6 +1473,7 @@ class OffLimitsWindow(QMainWindow):
         super().mouseReleaseEvent(event)
 
     def _start_sync(self) -> None:
+        self.sync_button.setEnabled(False)
         self.status_label.setText("Status: Checking for script updates...")
         thread = threading.Thread(target=self._run_sync, daemon=True)
         thread.start()
@@ -1463,6 +1483,7 @@ class OffLimitsWindow(QMainWindow):
         QTimer.singleShot(0, lambda: self._on_sync_done(result))
 
     def _on_sync_done(self, result: SyncResult) -> None:
+        self.sync_button.setEnabled(True)
         if result.changed:
             self.definitions = load_definitions(active_scripts_json_path(), project_root())
             self.global_keybinds = self._build_global_keybinds()
@@ -1470,6 +1491,13 @@ class OffLimitsWindow(QMainWindow):
             self._populate_script_menu()
             self._clear_selection()
         self.status_label.setText(f"Status: {result.summary()}")
+        if result.errors and not result.changed:
+            detail = "\n".join(result.errors[:5])
+            QMessageBox.warning(
+                self,
+                "Script sync failed",
+                f"Scripts could not be downloaded from GitHub. Click '↺ Sync' to retry.\n\nDetails:\n{detail}",
+            )
 
     def _start_drag(self, _event) -> None:
         pass

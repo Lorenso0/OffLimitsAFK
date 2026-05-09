@@ -118,10 +118,13 @@ def sync_scripts() -> SyncResult:
                 remote_sha = entry["sha"]
                 raw_url: str = entry["download_url"]
                 if remote_sha != manifest.get(name, ""):
-                    _download_raw(raw_url, scripts_cache_dir() / name)
-                    is_new = name not in manifest
-                    new_manifest[name] = remote_sha
-                    (result.new if is_new else result.updated).append(name)
+                    try:
+                        _download_raw(raw_url, scripts_cache_dir() / name)
+                        is_new = name not in manifest
+                        new_manifest[name] = remote_sha
+                        (result.new if is_new else result.updated).append(name)
+                    except Exception as exc:
+                        result.errors.append(f"{name}: {exc}")
         except Exception as exc:
             result.errors.append(f"scripts dir: {exc}")
 

@@ -294,10 +294,10 @@
                         "accent":  "#a855f7"
                     },
                     {
-                        "id":  "zombies-afk-shotgun-scoreboard",
-                        "name":  "Shotgun",
+                        "id":  "zombies-afk-m10-breacher-scoreboard",
+                        "name":  "M10 Breacher",
                         "kind":  "ahk",
-                        "entry":  "scripts/Shotgun.ahk",
+                        "entry":  "scripts/M10 Breacher.ahk",
                         "args":  [
 
                                  ],

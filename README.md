@@ -2,6 +2,8 @@
 
 This app is made to help Call of Duty players easily launch AFK scripts from one clean launcher.
 
+Downloads are available [here](https://github.com/Lorenso0/OffLimitsAFK/releases)
+
 ![OffLimitsAFK Preview](https://raw.githubusercontent.com/Lorenso0/OffLimitsAFK/refs/heads/main/resources/pictures/AppPreview.png)
 
 You do not need to deal with script files manually. The app is built to keep things simple:

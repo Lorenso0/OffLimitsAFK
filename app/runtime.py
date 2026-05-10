@@ -23,6 +23,18 @@ class LaunchResult:
     process: subprocess.Popen[str] | None = None
 
 
+def _windows_subprocess_kwargs() -> dict[str, object]:
+    if os.name != "nt":
+        return {}
+
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    return {
+        "startupinfo": startupinfo,
+        "creationflags": subprocess.CREATE_NO_WINDOW,
+    }
+
+
 def project_root() -> Path:
     if getattr(sys, "frozen", False):
         return Path(sys._MEIPASS)
@@ -236,6 +248,7 @@ FileAppend(value, "*")
             text=True,
             check=False,
             timeout=10,
+            **_windows_subprocess_kwargs(),
         )
     except Exception:
         helper_path.unlink(missing_ok=True)
@@ -283,6 +296,7 @@ FileAppend(display, "*")
             text=True,
             check=False,
             timeout=10,
+            **_windows_subprocess_kwargs(),
         )
     except Exception:
         helper_path.unlink(missing_ok=True)
@@ -368,7 +382,7 @@ def launch_script(
     try:
         command = build_command(definition, option_overrides, extra_args)
         cwd = str(resources_root())
-        process = subprocess.Popen(command, cwd=cwd)
+        process = subprocess.Popen(command, cwd=cwd, **_windows_subprocess_kwargs())
     except Exception as exc:  # noqa: BLE001
         return LaunchResult(False, str(exc))
 
@@ -386,6 +400,7 @@ def stop_process(process: subprocess.Popen[str] | None) -> LaunchResult:
                 check=True,
                 capture_output=True,
                 text=True,
+                **_windows_subprocess_kwargs(),
             )
         else:
             process.terminate()
@@ -432,6 +447,7 @@ foreach ($proc in $procs) {{
             capture_output=True,
             text=True,
             timeout=10,
+            **_windows_subprocess_kwargs(),
         )
     except Exception:
         return

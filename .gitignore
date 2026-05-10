@@ -1,3 +1,5 @@
 sync_to_github.bat
 __pycache__/
+app/__pycache__/
 *.py[cod]
+Off Limits AFK.exe

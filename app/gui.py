@@ -2807,7 +2807,7 @@ def launch() -> None:
     screen = app.primaryScreen()
     if screen:
         available_h = screen.availableGeometry().height()
-        _SF = min(0.85, max(0.60, available_h / _DESIGN_H))
+        _SF = min(1.4, max(0.65, (available_h / _DESIGN_H) * 0.92))
 
     app.setStyle("Fusion")
     ui_font = QFont("Segoe UI", max(8, int(11 * _SF)))

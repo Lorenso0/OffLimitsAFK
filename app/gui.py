@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QTabWidget,
     QToolButton,
@@ -436,32 +437,51 @@ class OffLimitsWindow(QMainWindow):
 
         self.tabs = QTabWidget()
         self.tabs.setObjectName("mainTabs")
-        body_layout.addWidget(self.tabs)
+        body_layout.addWidget(self.tabs, 1)
 
         main_tab = QWidget()
-        main_layout = QVBoxLayout(main_tab)
+        main_tab_layout = QVBoxLayout(main_tab)
+        main_tab_layout.setContentsMargins(0, 0, 0, 0)
+        main_tab_layout.setSpacing(_s(10))
+        self.tabs.addTab(main_tab, "Main")
+
+        # Scrollable content — top row + perks scroll; footer stays pinned below
+        main_content = QWidget()
+        main_content.setAutoFillBackground(False)
+        main_layout = QVBoxLayout(main_content)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(_s(14))
-        self.tabs.addTab(main_tab, "Main")
+
+        main_scroll = QScrollArea()
+        main_scroll.setObjectName("mainScroll")
+        main_scroll.setWidgetResizable(True)
+        main_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        main_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        main_scroll.setWidget(main_content)
+        main_scroll.setFrameShape(QFrame.NoFrame)
+        main_scroll.setAutoFillBackground(False)
+        main_scroll.viewport().setAutoFillBackground(False)
+        main_scroll.viewport().setStyleSheet("background: #090812;")
+        main_tab_layout.addWidget(main_scroll, 1)
 
         top_row = QHBoxLayout()
         top_row.setSpacing(_s(12))
         top_row.setAlignment(Qt.AlignTop)
-        main_layout.addLayout(top_row, 1)
+        main_layout.addLayout(top_row, 0)
 
         self.selector_panel = self._build_selector_panel()
         self.selector_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         top_row.addWidget(self.selector_panel, 1)
 
         self.requirements_panel = self._build_requirements_panel()
-        self.requirements_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        self.requirements_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         top_row.addWidget(self.requirements_panel, 1)
 
         self.perks_panel = self._build_perks_panel()
         main_layout.addWidget(self.perks_panel, 0)
 
         self.footer = self._build_footer()
-        main_layout.addWidget(self.footer)
+        main_tab_layout.addWidget(self.footer, 0)
 
         self.tabs.addTab(self._build_tester_tab(), "Tester")
 
@@ -2141,6 +2161,9 @@ class OffLimitsWindow(QMainWindow):
     def _apply_styles(self) -> None:
         self.setStyleSheet(
             f"""
+            #outer {{
+                background: #05040a;
+            }}
             #shell {{
                 background: #090812;
                 border: 1px solid #6b479d;
@@ -2481,6 +2504,34 @@ class OffLimitsWindow(QMainWindow):
             QMenu#scriptMenu::item:selected {{
                 background: #27153b;
             }}
+            #mainScroll {{
+                background: #090812;
+                border: none;
+            }}
+            #mainScroll > QWidget {{
+                background: #090812;
+            }}
+            #mainScroll QScrollBar:vertical {{
+                background: #120d1d;
+                width: {_s(8)}px;
+                margin: 0;
+                border-radius: {_s(4)}px;
+            }}
+            #mainScroll QScrollBar::handle:vertical {{
+                background: #5d4189;
+                min-height: {_s(24)}px;
+                border-radius: {_s(4)}px;
+            }}
+            #mainScroll QScrollBar::handle:vertical:hover {{
+                background: #a855f7;
+            }}
+            #mainScroll QScrollBar::add-line:vertical,
+            #mainScroll QScrollBar::sub-line:vertical,
+            #mainScroll QScrollBar::add-page:vertical,
+            #mainScroll QScrollBar::sub-page:vertical {{
+                background: transparent;
+                height: 0;
+            }}
             #syncButton {{
                 background: #0b0a14;
                 color: #b7abd4;
@@ -2756,7 +2807,7 @@ def launch() -> None:
     screen = app.primaryScreen()
     if screen:
         available_h = screen.availableGeometry().height()
-        _SF = min(1.0, max(0.65, available_h / _DESIGN_H))
+        _SF = min(0.85, max(0.60, available_h / _DESIGN_H))
 
     app.setStyle("Fusion")
     ui_font = QFont("Segoe UI", max(8, int(11 * _SF)))

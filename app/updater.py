@@ -10,7 +10,7 @@ from pathlib import Path
 from .version import APP_VERSION
 
 
-GITHUB_REPO = "Lorenso0/Off-Limits-AFK"
+GITHUB_REPO = "Lorenso0/OffLimitsAFK"
 GITHUB_BRANCH = "main"
 _API_BASE = f"https://api.github.com/repos/{GITHUB_REPO}"
 _RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}"

@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 import threading
@@ -321,7 +322,10 @@ class ThemedMessageDialog(ThemedDialog):
         body = QLabel(message)
         body.setObjectName("dialogHint")
         body.setWordWrap(True)
-        body.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        body.setTextFormat(Qt.RichText)
+        body.setOpenExternalLinks(True)
+        body.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        body.setText(self._linkify_text(message))
         card_layout.addWidget(body)
 
         buttons = QHBoxLayout()
@@ -333,6 +337,10 @@ class ThemedMessageDialog(ThemedDialog):
         buttons.addWidget(ok)
 
         self.body_layout.addLayout(buttons)
+
+    def _linkify_text(self, text: str) -> str:
+        pattern = re.compile(r"(https?://[^\s]+)")
+        return pattern.sub(r'<a href="\1">\1</a>', text).replace("\n", "<br>")
 
 
 class OffLimitsWindow(QMainWindow):
@@ -1362,6 +1370,9 @@ class OffLimitsWindow(QMainWindow):
             'Select your desired script, launch it and use the "Toggle Script" keybind to launch.',
             "Upgrade your gun as much as possible, goal is to kill the zombies with 1 shot.",
         ]
+
+        if definition is not None and definition.name in {"Shotgun", "Sniper"}:
+            items.append("Ensure you have a Tomahawk equipped!")
 
         for item in items:
             row = QWidget()

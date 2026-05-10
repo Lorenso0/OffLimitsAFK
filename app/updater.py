@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import os
-import urllib.request
+import re
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -12,8 +13,13 @@ from .version import APP_VERSION
 
 GITHUB_REPO = "Lorenso0/OffLimitsAFK"
 GITHUB_BRANCH = "main"
-_API_BASE = f"https://api.github.com/repos/{GITHUB_REPO}"
 _RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}"
+
+
+def _raw_repo_url(relative_path: str) -> str:
+    normalized = relative_path.strip().replace("\\", "/")
+    quoted = "/".join(urllib.parse.quote(part) for part in normalized.split("/"))
+    return f"{_RAW_BASE}/{quoted}"
 
 
 @dataclass(slots=True)
@@ -82,10 +88,6 @@ def scripts_json_cache_path() -> Path:
     return _appdata_dir() / "scripts.json"
 
 
-def _sha_manifest_path() -> Path:
-    return _appdata_dir() / "script_shas.json"
-
-
 def _request_headers(accept: str | None = None) -> dict[str, str]:
     headers = {"User-Agent": "OffLimitsAFKLauncher"}
     if accept:
@@ -94,99 +96,69 @@ def _request_headers(accept: str | None = None) -> dict[str, str]:
     return headers
 
 
-def _load_sha_manifest() -> dict[str, str]:
-    path = _sha_manifest_path()
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def _save_sha_manifest(manifest: dict[str, str]) -> None:
-    path = _sha_manifest_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def _fetch_json(url: str) -> object:
-    request = urllib.request.Request(url, headers=_request_headers("application/vnd.github+json"))
-    with urllib.request.urlopen(request, timeout=15) as response:
-        return json.load(response)
-
-
-def _download_raw(raw_url: str, dest: Path) -> None:
-    parsed = urllib.parse.urlparse(raw_url)
-    if parsed.netloc.lower() == "raw.githubusercontent.com":
-        raw_url = f"{_API_BASE}/contents/{parsed.path.split(f'/{GITHUB_BRANCH}/', 1)[-1]}?ref={GITHUB_BRANCH}"
-        request = urllib.request.Request(raw_url, headers=_request_headers("application/vnd.github.raw"))
-    else:
-        request = urllib.request.Request(raw_url, headers=_request_headers())
-    dest.parent.mkdir(parents=True, exist_ok=True)
+def _download_bytes(url: str) -> bytes:
+    request = urllib.request.Request(url, headers=_request_headers())
     with urllib.request.urlopen(request, timeout=30) as response:
-        dest.write_bytes(response.read())
+        return response.read()
+
+
+def _download_text(url: str) -> str:
+    return _download_bytes(url).decode("utf-8")
+
+
+def _write_if_changed(dest: Path, content: bytes, key: str, result: SyncResult) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    existed = dest.exists()
+    current = dest.read_bytes() if existed else b""
+    if current == content:
+        return
+    dest.write_bytes(content)
+    (result.new if not existed else result.updated).append(key)
 
 
 def check_app_version() -> tuple[bool, str, str]:
-    url = f"{_API_BASE}/releases/latest"
     try:
-        payload = _fetch_json(url)
+        version_text = _download_text(_raw_repo_url("app/version.py"))
     except Exception:
         return False, "", ""
 
-    if not isinstance(payload, dict):
+    match = re.search(r'APP_VERSION\s*=\s*["\']([^"\']+)["\']', version_text)
+    if not match:
         return False, "", ""
 
-    latest_version = str(payload.get("tag_name") or payload.get("name") or "").strip()
-    release_url = str(payload.get("html_url") or "").strip()
-    if not latest_version:
-        return False, "", release_url
+    latest_version = match.group(1).strip()
+    release_url = f"https://github.com/{GITHUB_REPO}/releases"
     return _is_newer_version(latest_version, APP_VERSION), latest_version, release_url
 
 
 def sync_scripts() -> SyncResult:
     result = SyncResult(ok=False)
     try:
-        manifest = _load_sha_manifest()
-        new_manifest = dict(manifest)
-
-        # Sync scripts.json
-        scripts_json_api_url = f"{_API_BASE}/contents/resources/scripts.json?ref={GITHUB_BRANCH}"
-        scripts_json_raw_url = f"{_RAW_BASE}/resources/scripts.json"
         try:
-            meta = _fetch_json(scripts_json_api_url)
-            remote_sha: str = meta["sha"]  # type: ignore[index]
-            cached_scripts_json = scripts_json_cache_path()
-            if remote_sha != manifest.get("scripts.json", "") or not cached_scripts_json.exists():
-                _download_raw(scripts_json_raw_url, scripts_json_cache_path())
-                is_new = "scripts.json" not in manifest
-                new_manifest["scripts.json"] = remote_sha
-                (result.new if is_new else result.updated).append("scripts.json")
+            scripts_json_bytes = _download_bytes(_raw_repo_url("resources/scripts.json"))
+            _write_if_changed(scripts_json_cache_path(), scripts_json_bytes, "scripts.json", result)
+            raw_config = json.loads(scripts_json_bytes.decode("utf-8"))
         except Exception as exc:
             result.errors.append(f"scripts.json: {exc}")
+            raw_config = {"scripts": []}
 
-        # Sync scripts directory
-        dir_api_url = f"{_API_BASE}/contents/resources/scripts?ref={GITHUB_BRANCH}"
-        try:
-            entries = _fetch_json(dir_api_url)
-            for entry in entries:  # type: ignore[union-attr]
-                if entry.get("type") != "file":  # type: ignore[union-attr]
-                    continue
-                name: str = entry["name"]
-                remote_sha = entry["sha"]
-                raw_url: str = entry["download_url"]
-                cached_script = scripts_cache_dir() / name
-                if remote_sha != manifest.get(name, "") or not cached_script.exists():
-                    try:
-                        _download_raw(raw_url, cached_script)
-                        is_new = name not in manifest
-                        new_manifest[name] = remote_sha
-                        (result.new if is_new else result.updated).append(name)
-                    except Exception as exc:
-                        result.errors.append(f"{name}: {exc}")
-        except Exception as exc:
-            result.errors.append(f"scripts dir: {exc}")
+        for item in raw_config.get("scripts", []):
+            if not isinstance(item, dict):
+                continue
+            if str(item.get("kind", "")).strip().lower() != "ahk":
+                continue
+
+            entry = str(item.get("entry", "")).strip()
+            if not entry.startswith("scripts/"):
+                continue
+
+            name = Path(entry).name
+            raw_url = _raw_repo_url(f"resources/{entry}")
+            try:
+                script_bytes = _download_bytes(raw_url)
+                _write_if_changed(scripts_cache_dir() / name, script_bytes, name, result)
+            except Exception as exc:
+                result.errors.append(f"{name}: {exc}")
 
         try:
             update_available, latest_version, release_url = check_app_version()
@@ -196,7 +168,6 @@ def sync_scripts() -> SyncResult:
         except Exception as exc:
             result.version_error = str(exc)
 
-        _save_sha_manifest(new_manifest)
         result.ok = not result.errors
 
     except Exception as exc:

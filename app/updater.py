@@ -7,15 +7,13 @@ import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .version import APP_VERSION
+
 
 GITHUB_REPO = "Lorenso0/Off-Limits-AFK"
 GITHUB_BRANCH = "main"
 _API_BASE = f"https://api.github.com/repos/{GITHUB_REPO}"
 _RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}"
-_HEADERS = {
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "OffLimitsAFKLauncher",
-}
 
 
 @dataclass(slots=True)
@@ -24,6 +22,11 @@ class SyncResult:
     updated: list[str] = field(default_factory=list)
     new: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    app_update_available: bool = False
+    latest_version: str = ""
+    current_version: str = APP_VERSION
+    release_url: str = ""
+    version_error: str = ""
 
     @property
     def changed(self) -> bool:
@@ -40,6 +43,30 @@ class SyncResult:
         if parts:
             return "Scripts updated: " + ", ".join(parts)
         return "Scripts up to date"
+
+
+def _version_parts(value: str) -> tuple[int, ...]:
+    cleaned = value.strip().lstrip("vV")
+    if not cleaned:
+        return ()
+    parts: list[int] = []
+    for piece in cleaned.split("."):
+        digits = "".join(ch for ch in piece if ch.isdigit())
+        if not digits:
+            break
+        parts.append(int(digits))
+    return tuple(parts)
+
+
+def _is_newer_version(latest: str, current: str) -> bool:
+    latest_parts = _version_parts(latest)
+    current_parts = _version_parts(current)
+    if not latest_parts or not current_parts:
+        return False
+    width = max(len(latest_parts), len(current_parts))
+    latest_full = latest_parts + (0,) * (width - len(latest_parts))
+    current_full = current_parts + (0,) * (width - len(current_parts))
+    return latest_full > current_full
 
 
 def _appdata_dir() -> Path:
@@ -59,34 +86,10 @@ def _sha_manifest_path() -> Path:
     return _appdata_dir() / "script_shas.json"
 
 
-def _github_token_path() -> Path:
-    return _appdata_dir() / "github_token.txt"
-
-
-def _github_token() -> str:
-    for env_name in ("OFFLIMITS_GITHUB_TOKEN", "GITHUB_TOKEN"):
-        value = os.environ.get(env_name, "").strip()
-        if value:
-            return value
-
-    token_path = _github_token_path()
-    if token_path.exists():
-        try:
-            return token_path.read_text(encoding="utf-8").strip()
-        except Exception:
-            return ""
-
-    return ""
-
-
 def _request_headers(accept: str | None = None) -> dict[str, str]:
     headers = {"User-Agent": "OffLimitsAFKLauncher"}
     if accept:
         headers["Accept"] = accept
-
-    token = _github_token()
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
 
     return headers
 
@@ -123,6 +126,23 @@ def _download_raw(raw_url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     with urllib.request.urlopen(request, timeout=30) as response:
         dest.write_bytes(response.read())
+
+
+def check_app_version() -> tuple[bool, str, str]:
+    url = f"{_API_BASE}/releases/latest"
+    try:
+        payload = _fetch_json(url)
+    except Exception:
+        return False, "", ""
+
+    if not isinstance(payload, dict):
+        return False, "", ""
+
+    latest_version = str(payload.get("tag_name") or payload.get("name") or "").strip()
+    release_url = str(payload.get("html_url") or "").strip()
+    if not latest_version:
+        return False, "", release_url
+    return _is_newer_version(latest_version, APP_VERSION), latest_version, release_url
 
 
 def sync_scripts() -> SyncResult:
@@ -167,6 +187,14 @@ def sync_scripts() -> SyncResult:
                         result.errors.append(f"{name}: {exc}")
         except Exception as exc:
             result.errors.append(f"scripts dir: {exc}")
+
+        try:
+            update_available, latest_version, release_url = check_app_version()
+            result.app_update_available = update_available
+            result.latest_version = latest_version
+            result.release_url = release_url
+        except Exception as exc:
+            result.version_error = str(exc)
 
         _save_sha_manifest(new_manifest)
         result.ok = not result.errors

@@ -1,96 +1,86 @@
-# Script Host
+# Off Limits AFK Scripts
 
-One Windows `.exe` that launches many helper scripts from one GUI.
+This app is made to help Call of Duty players easily launch AFK scripts from one clean launcher.
 
-## Why this shape
+You do not need to deal with script files manually. The app is built to keep things simple:
 
-- Python host app gives stable GUI and packaging flow.
-- AHK scripts stay AHK for the actual automation layer.
-- One config file controls what appears in GUI.
-- Root-level `.ahk` files auto-appear in dev.
-- `PyInstaller --onefile` builds single `ScriptHost.exe`.
-- Launcher auto-downloads script files from GitHub into `%APPDATA%\OffLimits\AFK\scripts` and loads them from there.
-- Launcher auto-downloads the official runtime into `%APPDATA%\OffLimits\AFK` when needed, and can also use an already installed system runtime.
+- pick a script
+- check the setup shown in the app
+- adjust the script variables if needed
+- launch the script
+- use your toggle key to start or stop it in-game
 
-## Project layout
+## What The App Does
 
-- `main.py`: app entry point.
-- `app/`: GUI, config loading, runtime launching.
-- `resources/scripts.json`: list of scripts shown in GUI.
-- `resources/loadout.json`: shared required perks and augments shown for all scripts.
-- `resources/scripts/`: dev copy of AHK automation scripts used as GitHub source.
+- Shows all available AFK scripts in one place
+- Lets you edit script timings and options before launch
+- Lets you set your keybinds once and reuse them across scripts
+- Can test scripts in the built-in `Tester` tab
+- Can export supported scripts to GPC
+- Checks for script updates from the GitHub repo
+- Lets you know if a newer app version is available
 
-## Run in dev
+## Basic Use
 
-```powershell
-python main.py
-```
+1. Open the app.
+2. Click the script selector and choose the script you want.
+3. Read the setup and perk requirements shown in the window.
+4. Click `Edit Keybinds` and make sure your in-game bindings match.
+5. Adjust any script variables if needed.
+6. Click `Launch Selected Script`.
+7. Go into Call of Duty and press your toggle key to start or stop the script.
 
-## Build one exe
+## Default Keys
 
-```powershell
-.\build.ps1
-```
+The exact keys can be changed in the app, but the common defaults are:
 
-Build output lands in `dist/ScriptHost.exe`.
+- Toggle script: `8`
+- Exit script: `F2`
 
-## Add script
+## Tester Tab
 
-1. Put script file in `resources/scripts/`.
-2. Add entry in `resources/scripts.json`.
-3. Push repo update so launcher can download new file.
-4. Rebuild app only if GUI/assets changed.
+The `Tester` tab is there so you can test scripts without going straight into the game.
 
-Example config item:
+It can:
 
-```json
-{
-  "id": "my-tool",
-  "name": "My Tool",
-  "kind": "python",
-  "entry": "scripts/my_tool.py",
-  "description": "Does useful work.",
-  "args": [],
-  "setup": ["Do this first"],
-  "accent": "#8b5cf6"
-}
-```
+- open a dedicated tester window
+- launch the selected script into that tester window
+- show key and mouse input activity
+- show the timing between inputs
+- show script lifecycle markers like `READY`, `START`, and `END`
 
-Shared loadout example:
+This is useful when you want to confirm that a script is firing the right inputs before using it in-game.
 
-```json
-{
-  "perks": [
-    {
-      "name": "Jugger-Nog",
-      "image": "pictures/Jugger-Nog.png",
-      "augments": [
-        {"slot": "Major", "name": "Probiotic", "image": "pictures/Jugger-Nog Major Probiotic.png"},
-        {"slot": "Minor", "name": "Durable Plates", "image": "pictures/Jugger-Nog Minor Durable Plates.png"},
-        {"slot": "Minor", "name": "Hardened Plates", "image": "pictures/Jugger-Nog Minor Hardened Plates.png"}
-      ]
-    }
-  ]
-}
-```
+## GPC Export
 
-For AutoHotkey:
+Some scripts support GPC export.
 
-- Set `"kind": "ahk"`.
-- Use AHK v2 syntax.
-- Launcher can auto-download the official AutoHotkey zip from GitHub, extract `AutoHotkey64.exe`, and cache it in `%APPDATA%\OffLimits\AFK`.
-- If AutoHotkey is already installed on the machine, the launcher can use that too.
-- Built `.exe` does not bundle `.ahk` files. On startup or launch, it syncs `resources/scripts/*.ahk` from GitHub into `%APPDATA%\OffLimits\AFK\scripts` and runs cached copies from there.
-- For private repos, set `OFFLIMITS_GITHUB_TOKEN` or `GITHUB_TOKEN`, or place a personal access token in `%APPDATA%\OffLimits\AFK\github_token.txt`.
-- Any `.ahk` file in project root is auto-detected in dev.
+If a script supports it, you can export it from the app and choose your controller platform and button mappings. Scoreboard toggling is not included in GPC exports.
 
-## Recommendation
+## Updates
 
-Keep the launcher in Python and keep the real automation scripts in AHK.
+The app can:
 
-This project now treats AHK as the source of truth for the actual game macros, while Python handles:
+- download the latest script files from the public GitHub repo
+- tell you when a newer app version is available on GitHub
 
-- GUI
-- process launching and stopping
-- packaging
-- shared config and assets
+Use the `Sync` button in the app if you want to manually check for updated scripts.
+
+## Important Notes
+
+- Make sure your in-game keybinds match the app keybinds.
+- Always read the setup instructions shown for the selected script.
+- If a script is already running and you change variables, relaunch it so the new values apply.
+- Closing the app will also stop the managed AHK scripts it launched.
+
+## If Something Looks Wrong
+
+If a script is not behaving correctly:
+
+1. Re-check your keybinds in the app.
+2. Make sure the game window is focused.
+3. Use the `Tester` tab to confirm the script is sending the expected inputs.
+4. Relaunch the script after changing any variables.
+5. Use `Stop All Scripts` if you want to fully reset the launcher state.
+
+If you still need help, contact me on Discord: `@lorenso0`

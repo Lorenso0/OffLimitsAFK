@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import json
 
@@ -47,17 +47,38 @@ class KeybindDefinition:
 
 
 @dataclass(slots=True)
+class GpcActionStep:
+    kind: str
+    action: str = ""
+    duration: int | None = None
+    duration_timing: str = ""
+    random_timing: str = ""
+    condition_timing: str = ""
+    value: int = 100
+    steps: list["GpcActionStep"] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class GpcDefinition:
+    supported: bool
+    target: str
+    required_actions: list[str]
+    default_toggle: str
+    notes: list[str]
+    actions: list[GpcActionStep]
+
+
+@dataclass(slots=True)
 class ScriptDefinition:
     id: str
     name: str
     kind: str
     entry: str
-    description: str
     args: list[str]
-    setup: list[str]
     timings: list[TimingDefinition]
     keybinds: list[KeybindDefinition]
     accent: str
+    gpc: GpcDefinition | None
 
 
 def _parse_perks(items: list[dict]) -> list[PerkDefinition]:
@@ -79,6 +100,39 @@ def _parse_perks(items: list[dict]) -> list[PerkDefinition]:
             )
         )
     return perks
+
+
+def _parse_gpc_steps(items: list[dict]) -> list[GpcActionStep]:
+    steps: list[GpcActionStep] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        steps.append(
+            GpcActionStep(
+                kind=str(item.get("kind", "")).strip(),
+                action=str(item.get("action", "")).strip(),
+                duration=item.get("duration"),
+                duration_timing=str(item.get("duration_timing", "")).strip(),
+                random_timing=str(item.get("random_timing", "")).strip(),
+                condition_timing=str(item.get("condition_timing", "")).strip(),
+                value=int(item.get("value", 100)),
+                steps=_parse_gpc_steps(item.get("steps", [])),
+            )
+        )
+    return steps
+
+
+def _parse_gpc(raw: dict | None) -> GpcDefinition | None:
+    if not isinstance(raw, dict):
+        return None
+    return GpcDefinition(
+        supported=bool(raw.get("supported", False)),
+        target=str(raw.get("target", "")).strip(),
+        required_actions=[str(item).strip() for item in raw.get("required_actions", []) if str(item).strip()],
+        default_toggle=str(raw.get("default_toggle", "")).strip(),
+        notes=[str(item).strip() for item in raw.get("notes", []) if str(item).strip()],
+        actions=_parse_gpc_steps(raw.get("actions", [])),
+    )
 
 
 def _from_json_file(config_path: Path) -> list[ScriptDefinition]:
@@ -116,12 +170,11 @@ def _from_json_file(config_path: Path) -> list[ScriptDefinition]:
                 name=item["name"],
                 kind=item["kind"],
                 entry=item["entry"],
-                description=item.get("description", "").strip(),
                 args=item.get("args", []),
-                setup=item.get("setup", []),
                 timings=timings,
                 keybinds=keybinds,
                 accent=item.get("accent", "#8b5cf6"),
+                gpc=_parse_gpc(item.get("gpc")),
             )
         )
 
@@ -138,12 +191,11 @@ def _discover_ahk(project_root: Path) -> list[ScriptDefinition]:
                 name=script_path.stem,
                 kind="ahk",
                 entry=script_path.name,
-                description="Discovered from project root.",
                 args=[],
-                setup=[],
                 timings=[],
                 keybinds=[],
                 accent="#8b5cf6",
+                gpc=None,
             )
         )
 
@@ -155,12 +207,11 @@ def _discover_ahk(project_root: Path) -> list[ScriptDefinition]:
                 name=script_path.stem,
                 kind="ahk",
                 entry=f"scripts/{script_path.name}",
-                description="Discovered from resources/scripts.",
                 args=[],
-                setup=[],
                 timings=[],
                 keybinds=[],
                 accent="#8b5cf6",
+                gpc=None,
             )
         )
 
@@ -172,12 +223,11 @@ def _discover_ahk(project_root: Path) -> list[ScriptDefinition]:
                 name=f"{script_path.stem} (Bundled)",
                 kind="ahk",
                 entry=f"imported/{script_path.name}",
-                description="Bundled into build from project root AHK file.",
                 args=[],
-                setup=[],
                 timings=[],
                 keybinds=[],
                 accent="#8b5cf6",
+                gpc=None,
             )
         )
 

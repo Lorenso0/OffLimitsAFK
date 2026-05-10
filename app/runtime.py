@@ -48,6 +48,11 @@ def resolve_entry(entry: str) -> Path:
         return entry_path
 
     is_cached_script = len(entry_path.parts) > 1 and entry_path.parts[0] == "scripts"
+    if is_cached_script and not getattr(sys, "frozen", False):
+        resource_path = resources_root() / entry_path
+        if resource_path.exists():
+            return resource_path
+
     cache_path = scripts_cache_dir() / entry_path.name
     if is_cached_script:
         return cache_path
@@ -64,6 +69,8 @@ def resolve_entry(entry: str) -> Path:
 
 
 def active_scripts_json_path() -> Path:
+    if not getattr(sys, "frozen", False):
+        return resources_root() / "scripts.json"
     cached = scripts_json_cache_path()
     if cached.exists():
         return cached
@@ -335,18 +342,20 @@ def _build_flag_args(definitions: list[TimingDefinition | KeybindDefinition], ov
 def build_command(
     definition: ScriptDefinition,
     option_overrides: dict[str, str] | None = None,
+    extra_args: list[str] | None = None,
 ) -> list[str]:
     option_args = _build_flag_args(definition.timings + definition.keybinds, option_overrides)
+    extra_args = extra_args or []
 
     if definition.kind == "python":
         entry = resolve_entry(definition.entry)
-        return [sys.executable, str(entry), *definition.args, *option_args]
+        return [sys.executable, str(entry), *definition.args, *option_args, *extra_args]
 
     if definition.kind == "ahk":
         runtime = ensure_ahk_runtime()
         entry = _ensure_script_entry(definition.entry)
         script_path = _materialize_if_frozen(entry)
-        return [str(runtime), str(script_path), *definition.args, *option_args]
+        return [str(runtime), str(script_path), *definition.args, *option_args, *extra_args]
 
     raise ValueError(f"Unsupported script kind: {definition.kind}")
 
@@ -354,9 +363,10 @@ def build_command(
 def launch_script(
     definition: ScriptDefinition,
     option_overrides: dict[str, str] | None = None,
+    extra_args: list[str] | None = None,
 ) -> LaunchResult:
     try:
-        command = build_command(definition, option_overrides)
+        command = build_command(definition, option_overrides, extra_args)
         cwd = str(resources_root())
         process = subprocess.Popen(command, cwd=cwd)
     except Exception as exc:  # noqa: BLE001

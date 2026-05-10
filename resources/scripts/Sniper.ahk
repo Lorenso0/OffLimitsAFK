@@ -1,12 +1,12 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 #MaxThreadsPerHotkey 2
-#HotIf WinActive("ahk_exe cod.exe")
-
 SendMode("Input")
 SetKeyDelay(-1, -1)
 
 global Toggle := false
+global TargetWindowTitle := "ahk_exe cod.exe"
+global MarkerFilePath := ""
 global ResetTime := 800
 global VWaitTime := 1550
 global ScoreboardToggling := 1
@@ -19,10 +19,13 @@ global MeleeKey := "v"
 
 ApplyOverrides()
 ConfigureHotkeys()
+WriteMarker("READY")
 
 ApplyOverrides() {
-    global ResetTime, VWaitTime, ScoreboardToggling, ToggleKey, ExitKey, LethalKey, WeaponSwitchKey, ScoreboardKey, MeleeKey
+    global TargetWindowTitle, MarkerFilePath, ResetTime, VWaitTime, ScoreboardToggling, ToggleKey, ExitKey, LethalKey, WeaponSwitchKey, ScoreboardKey, MeleeKey
 
+    TargetWindowTitle := ReadStringArg("--target-title", TargetWindowTitle)
+    MarkerFilePath := ReadStringArg("--marker-file", MarkerFilePath)
     ResetTime := ReadIntArg("--reset-time", ResetTime)
     VWaitTime := ReadIntArg("--v-wait-time", VWaitTime)
     ScoreboardToggling := ReadIntArg("--scoreboard-toggling", ScoreboardToggling)
@@ -35,9 +38,9 @@ ApplyOverrides() {
 }
 
 ConfigureHotkeys() {
-    global ToggleKey, ExitKey
+    global TargetWindowTitle, ToggleKey, ExitKey
 
-    HotIfWinActive("ahk_exe cod.exe")
+    HotIfWinActive(TargetWindowTitle)
     Hotkey(ToggleKey, ToggleScript)
     Hotkey(ExitKey, ExitScript)
     HotIf()
@@ -47,7 +50,7 @@ ReadIntArg(flag, fallback) {
     loop A_Args.Length {
         if (A_Args[A_Index] = flag) && (A_Index < A_Args.Length) {
             value := Integer(A_Args[A_Index + 1])
-            return value > 0 ? value : fallback
+            return value >= 0 ? value : fallback
         }
     }
     return fallback
@@ -82,14 +85,24 @@ SendKey(value) {
     Send(FormatSendKey(value))
 }
 
+WriteMarker(event) {
+    global MarkerFilePath
+    if MarkerFilePath = "" {
+        return
+    }
+    try FileAppend(event . "`n", MarkerFilePath, "UTF-8")
+}
+
 ToggleScript(*) {
     global Toggle
 
     Toggle := !Toggle
     if Toggle {
+        WriteMarker("START")
         ShowStatus("ON")
         SetTimer(MainLoop, -1)
     } else {
+        WriteMarker("END")
         ShowStatus("OFF")
         Sleep(1000)
         Reload()
@@ -97,6 +110,7 @@ ToggleScript(*) {
 }
 
 ExitScript(*) {
+    WriteMarker("EXIT")
     ExitApp()
 }
 

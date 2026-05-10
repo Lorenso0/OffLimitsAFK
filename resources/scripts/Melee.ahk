@@ -8,6 +8,8 @@ SetKeyDelay(-1, -1)
 DllCall("winmm\timeBeginPeriod", "UInt", 1)
 
 global Toggle := false
+global TargetWindowTitle := "ahk_exe cod.exe"
+global MarkerFilePath := ""
 global VDelay := 130
 global VDelayRnd := 79
 global ScoreboardToggling := 1
@@ -18,10 +20,13 @@ global MeleeKey := "v"
 
 ApplyOverrides()
 ConfigureHotkeys()
+WriteMarker("READY")
 
 ApplyOverrides() {
-    global VDelay, VDelayRnd, ScoreboardToggling, ToggleKey, ExitKey, ScoreboardKey, MeleeKey
+    global TargetWindowTitle, MarkerFilePath, VDelay, VDelayRnd, ScoreboardToggling, ToggleKey, ExitKey, ScoreboardKey, MeleeKey
 
+    TargetWindowTitle := ReadStringArg("--target-title", TargetWindowTitle)
+    MarkerFilePath := ReadStringArg("--marker-file", MarkerFilePath)
     VDelay := ReadIntArg("--v-delay", VDelay)
     VDelayRnd := ReadIntArg("--v-delay-random", VDelayRnd)
     ScoreboardToggling := ReadIntArg("--scoreboard-toggling", ScoreboardToggling)
@@ -32,10 +37,12 @@ ApplyOverrides() {
 }
 
 ConfigureHotkeys() {
-    global ToggleKey, ExitKey
+    global TargetWindowTitle, ToggleKey, ExitKey
 
+    HotIfWinActive(TargetWindowTitle)
     Hotkey(ToggleKey, ToggleScript)
     Hotkey(ExitKey, ExitScript)
+    HotIf()
 }
 
 ReadIntArg(flag, fallback) {
@@ -77,14 +84,24 @@ SendKey(value) {
     Send(FormatSendKey(value))
 }
 
+WriteMarker(event) {
+    global MarkerFilePath
+    if MarkerFilePath = "" {
+        return
+    }
+    try FileAppend(event . "`n", MarkerFilePath, "UTF-8")
+}
+
 ToggleScript(*) {
     global Toggle
 
     Toggle := !Toggle
     if Toggle {
+        WriteMarker("START")
         ShowStatus("ON")
         SetTimer(MainLoop, -1)
     } else {
+        WriteMarker("END")
         ShowStatus("OFF")
         SetTimer(MainLoop, 0)
         Sleep(1000)
@@ -93,6 +110,7 @@ ToggleScript(*) {
 }
 
 ExitScript(*) {
+    WriteMarker("EXIT")
     ExitApp()
 }
 

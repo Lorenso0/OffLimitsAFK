@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
@@ -20,6 +21,10 @@ def _raw_repo_url(relative_path: str) -> str:
     normalized = relative_path.strip().replace("\\", "/")
     quoted = "/".join(urllib.parse.quote(part) for part in normalized.split("/"))
     return f"{_RAW_BASE}/{quoted}"
+
+
+def _cache_busted_raw_repo_url(relative_path: str) -> str:
+    return f"{_raw_repo_url(relative_path)}?cb={int(time.time())}"
 
 
 @dataclass(slots=True)
@@ -118,7 +123,7 @@ def _write_if_changed(dest: Path, content: bytes, key: str, result: SyncResult) 
 
 def check_app_version() -> tuple[bool, str, str]:
     try:
-        version_text = _download_text(_raw_repo_url("app/version.py"))
+        version_text = _download_text(_cache_busted_raw_repo_url("app/version.py"))
     except Exception:
         return False, "", ""
 
@@ -135,7 +140,7 @@ def sync_scripts() -> SyncResult:
     result = SyncResult(ok=False)
     try:
         try:
-            scripts_json_bytes = _download_bytes(_raw_repo_url("resources/scripts.json"))
+            scripts_json_bytes = _download_bytes(_cache_busted_raw_repo_url("resources/scripts.json"))
             _write_if_changed(scripts_json_cache_path(), scripts_json_bytes, "scripts.json", result)
             raw_config = json.loads(scripts_json_bytes.decode("utf-8"))
         except Exception as exc:
@@ -153,7 +158,7 @@ def sync_scripts() -> SyncResult:
                 continue
 
             name = Path(entry).name
-            raw_url = _raw_repo_url(f"resources/{entry}")
+            raw_url = _cache_busted_raw_repo_url(f"resources/{entry}")
             try:
                 script_bytes = _download_bytes(raw_url)
                 _write_if_changed(scripts_cache_dir() / name, script_bytes, name, result)

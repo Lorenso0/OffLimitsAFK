@@ -7,7 +7,7 @@ SetKeyDelay(-1, -1)
 global Toggle := false
 global TargetWindowTitle := "ahk_exe cod.exe"
 global MarkerFilePath := ""
-global ResetTime := 800
+global ResetTime := 900
 global VWaitTime := 1550
 global ScoreboardToggling := 1
 global ToggleKey := "8"

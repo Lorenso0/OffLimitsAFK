@@ -849,6 +849,98 @@
                                                 ]
                                 },
                         "accent":  "#c084fc"
+                    },
+                    {
+                        "id":  "zombies-afk-xr3-ion",
+                        "name":  "XR-3 ION",
+                        "kind":  "ahk",
+                        "entry":  "scripts/XR-3 ION.ahk",
+                        "args":  [],
+                        "keybinds":  [
+                                         {
+                                             "key":  "toggle_key",
+                                             "label":  "Toggle Script",
+                                             "flag":  "--toggle-key",
+                                             "value":  "8",
+                                             "placeholder":  "8"
+                                         },
+                                         {
+                                             "key":  "exit_key",
+                                             "label":  "Exit Script",
+                                             "flag":  "--exit-key",
+                                             "value":  "F2",
+                                             "placeholder":  "F2"
+                                         },
+                                         {
+                                             "key":  "lethal_key",
+                                             "label":  "Lethal Equipment",
+                                             "flag":  "--lethal-key",
+                                             "value":  "g",
+                                             "placeholder":  "g"
+                                         },
+                                         {
+                                             "key":  "weapon_switch_key",
+                                             "label":  "Weapon Switch",
+                                             "flag":  "--weapon-switch-key",
+                                             "value":  "1",
+                                             "placeholder":  "1"
+                                         },
+                                         {
+                                             "key":  "scoreboard_key",
+                                             "label":  "Scoreboard Toggle",
+                                             "flag":  "--scoreboard-key",
+                                             "value":  "sc029",
+                                             "placeholder":  "sc029"
+                                         },
+                                         {
+                                             "key":  "melee_key",
+                                             "label":  "Melee",
+                                             "flag":  "--melee-key",
+                                             "value":  "v",
+                                             "placeholder":  "v"
+                                         }
+                                     ],
+                        "timings":  [
+                                        {
+                                            "key":  "scoreboard_toggling",
+                                            "label":  "Scoreboard toggling",
+                                            "flag":  "--scoreboard-toggling",
+                                            "value":  "1",
+                                            "false_value":  "0",
+                                            "control":  "checkbox",
+                                            "suffix":  ""
+                                        },
+                                        {
+                                            "key":  "lbutton",
+                                            "label":  "Hold Left Click",
+                                            "flag":  "--lbutton",
+                                            "value":  "450",
+                                            "suffix":  "ms"
+                                        },
+                                        {
+                                            "key":  "reset_time",
+                                            "label":  "Wait before Melee",
+                                            "flag":  "--reset-time",
+                                            "value":  "900",
+                                            "suffix":  "ms"
+                                        },
+                                        {
+                                            "key":  "v_wait_time",
+                                            "label":  "Wait after Melee",
+                                            "flag":  "--v-wait-time",
+                                            "value":  "1550",
+                                            "suffix":  "ms"
+                                        }
+                                    ],
+                        "gpc":  {
+                                    "supported":  false,
+                                    "target":  "cronus_zen",
+                                    "required_actions":  [],
+                                    "default_toggle":  "view_share_up_down",
+                                    "notes":  [],
+                                    "actions":  []
+                                },
+                        "accent":  "#4f46e5"
                     }
                 ]
 }
